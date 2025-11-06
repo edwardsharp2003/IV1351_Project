@@ -71,10 +71,10 @@ Below is an example of course instances with planned activities.
 This example is only meant to illustrate some teaching activities and other information that may be associated with course instances, 
 it is NOT meant to show any rows or columns of a Table.
 
-| Course code | Course Instance ID | Period | # Students | Lecture Hours | Tutorial Hours | Lab Hours | Seminar Hours | Other Overhead Hours | Admin | Exam |
-|-------------|--------------------|--------|------------|---------------|----------------|-----------|---------------|----------------------|-------|------|
-| IV1351      | 2025-50273         | 7.5    | 200        | 20            | 80             | 40        | 80            | 650                  | 177   | 83   |
-| IX1500      | 2025-50413         | 7.5    | 150        | 44            | 0              | 0         | 64            | 200                  | 141   | 73   |
+| Course code | Course Instance ID | HP  | Period | # Students | Lecture Hours | Tutorial Hours | Lab Hours | Seminar Hours | Other Overhead Hours | Admin | Exam |
+|-------------|--------------------|-----|--------|------------|---------------|----------------|-----------|---------------|----------------------|-------|------|
+| IV1351      | 2025-50273         | 7.5 | P2     | 200        | 20            | 80             | 40        | 80            | 650                  | 177   | 83   |
+| IX1500      | 2025-50413         | 7.5 | P1     | 150        | 44            | 0              | 0         | 64            | 200                  | 141   | 73   |
 
 ### Departments: 
 There are several departments at the university. 
@@ -228,7 +228,193 @@ This discussion shall be placed in the Discussion chapter of the report.
 HINT: A solution to this problem often includes storing the date_time or version of a certain layout. 
 You're however not required to do that, there are also other possible solutions. 
 
+## 5.2. Task 2, SQL
+### How to prepare
+Understand the lecture on [SQL](https://canvas.kth.se/courses/57087/pages/sql-the-structured-query-language) (given live and recorded).
+Read the document [seminar2-tips-and-tricks.pdf](seminar_2/seminar2-tips-and-tricks.pdf).
 
+### When To Solve
+You're recommended to start working on this task as soon as possible after seminar 1, but remember to first do the preparations mentioned above. 
+The deadline for submitting the report is found on the [seminar 2 assignment page](https://canvas.kth.se/courses/57087/assignments/352944).
 
+### Intended Learning Outcomes
+* Use relational databases and query languages.
+* Describe and explain basic concepts, principles and theories in the area of data/databases/data storage and in information administration and database design
+
+### Mandatory Part
+**The goal here is to create OLAP, Online Analytical Processing, queries and views**. 
+Such queries serve to analyze the business and to create reports. 
+**You're also required to analyze the efficiency of one of the queries with EXPLAIN ANALYZE**. 
+Even though that's not standard SQL, it's available in both PostgreSQL and MySQL. 
+You also have to make sure the database contains sufficient data to check that all queries work as intended. 
+If needed, update the script that inserts data, created in task two. 
+You're allowed to change the database you created in task two if needed. 
+The queries that shall be created are explained below, only OLAP queries will be created here. 
+The OLTP (Online Transaction Processing) queries used by the business itself will be created in task 3, together with the program executing them.
+
+HINT: You might want to use an online generator to create the database content, for example https://generatedata.com, instead of creating the data manually.
+
+**The following queries will be executed manually, to generate analysis reports.**
+1. Planned hours calculations:
+Calculate the total hours (with the multiplication factor) along with the break-ups for each activity, 
+for the current years’ course instances. 
+
+**Table 4.** Expected output for query 1. 
+This example is only meant to illustrate the expected rows and columns. 
+It's perfectly fine to change text formatting, and also to change the values.
+
+| Course code | Course Instance ID | HP  | Period | # Students | Lecture Hours | Tutorial Hours | Lab Hours | Seminar Hours | Other Overhead Hours | Admin | Exam | Total Hours |
+|-------------|--------------------|-----|--------|------------|---------------|----------------|-----------|---------------|----------------------|-------|------|-------------|
+| IV1351      | 2025-50273         | 7.5 | P2     | 200        | 72            | 192            | 96        | 144           | 650                  | 177   | 83   | 1414        |
+| IX1500      | 2025-50413         | 7.5 | P1     | 150        | 159           | 0              | 0         | 116           | 270                  | 141   | 73   | 759         |
+
+2. Calculate actual allocated hours for a course:
+Calculate the total allocated hours with the multiplication factor along with the break-ups for each activity and for each teacher, for a current years’ course instance. 
+Table 5 below is an example result of such a query, illustrating the expected output.
+
+**Table 5.** Expected output for query 2. 
+This example is only meant to illustrate the expected rows and columns. 
+It's perfectly fine to change text formatting, and also to change the values.
+
+| Course code | Course Instance ID | HP  | Teacher's Name   | Designation    | Lecture Hours | Tutorial Hours | Lab Hours | Seminar Hours | Other Overhead Hours | Admin | Exam | Total |
+|-------------|--------------------|-----|------------------|----------------|---------------|----------------|-----------|---------------|----------------------|-------|------|-------|
+| IV1351      | 2025-50273         | 7.5 | Paris Carbone    | Ass. Professor | 72            | 0              | 0         | 0             | 100                  | 43    | 61   | 276   |
+| IV1351      | 2025-50273         | 7.5 | Leif Linbäck     | Lecturer       | 0             | 0              | 0         | 64            | 100                  | 0     | 62   | 226   |
+| IV1351      | 2025-50273         | 7.5 | Niharika Gauraha | Lecturer       | 0             | 0              | 0         | 64            | 100                  | 43    | 61   | 268   |
+| IV1351      | 2025-50273         | 7.5 | Brian            | PhD Student    | 0             | 0              | 50        | 0             | 100                  | 0     | 0    | 150   |
+| IV1351      | 2025-50273         | 7.5 | Adam             | TA             | 0             | 0              | 50        | 50            | 0                    | 0     | 0    | 100   |
+
+3. **Calculate the total allocated hours (with multiplication factors) for a teacher, only for the current years’ course instances.**
+Table 6 below is an example result of such a query, illustrating the expected output.
+
+**Table 6.** Expected output for query 3. 
+This example is only meant to illustrate the expected rows and columns. 
+It's perfectly fine to change text formatting, and also to change the values.
+
+| Course code | Course Instance ID | HP  | Period | Teacher's Name   | Lecture Hours | Tutorial Hours | Lab Hours | Seminar Hours | Other Overhead Hours | Admin | Exam | Total |
+|-------------|--------------------|-----|--------|------------------|---------------|----------------|-----------|---------------|----------------------|-------|------|-------|
+| IX1500      | 2025-50413         | 7.5 | P1     | Niharika Gauraha | 159           | 0              | 0         | 0             | 100                  | 141   | 73   | 473   |
+| IV1351      | 2025-50273         | 7.5 | P2     | Niharika Gauraha | 0             | 0              | 0         | 64            | 100                  | 43    | 61   | 268   |
+| ID2214      | 2025-50341         | 7.5 | P2     | Niharika Gauraha | 44            | 36             | 0         | 0             | 40                   | 0     | 20   | 140   |
+| IV1350      | 2025-60104         | 7.5 | P3     | Niharika Gauraha | 0             | 25             | 0         | 0             | 100                  | 0     | 74   | 199   |
+
+4. **List employee ids and names of all teachers who are allocated in more than a specific number of course instances during the current period.**  
+Table 7 below is an example result of such a query, illustrating the expected output.
+
+**Table 7.** Expected output for query 4. 
+This example is only meant to illustrate the expected rows and columns. 
+It's perfectly fine to change text formatting, and also to change the values.
+
+| Employment ID | Teacher's Name   | Period | N.o of courses |
+|---------------|------------------|--------|----------------| 
+| 500001        | Paris Carbone	   | P1     | 1             |
+| 500004        | Leif Lindbäck    | P1     | 1              |
+| 500009        | Niharika Gauraha | P1     | 2              |
+
+**Below is specified what shall be written in the report.**
+* In the **Method** chapter of your report, mention which DBMS you use, which tool is used to develop SQL queries, and how you have verified that your SQL queries work as intended. 
+You shall just tell which method you used for verifying that the queries work as intended, not explain in detail how you verified the functionality of each query.
+* In the **Result** chapter of your report, include a link to a git repository where you have stored a script with all queries. 
+Also explain each query and show that all queries work as intended by including the output of each query. 
+The git repository must also contain the scripts that create the database and insert data. 
+It shall be possible to test your solution by executing first the script that creates the database, then the script that inserts data, and finally any of the queries created in this task.
+* In the **Discussion** chapter of your report, evaluate your queries. 
+Suggested assessment criteria are found in [seminar2-assessment-criteria.pdf](seminar_2/seminar2-assessment-criteria.pdf). 
+You don't have to cover them all, but **you must at least cover the bullet on EXPLAIN, which means you have to analyze at least one of your queries. 
+The assessment criteria in this document will also be used to grade your project report.**
+
+### Higher Grade Part
+The following requirements must be met to get the higher grade points. 
+You can not get half of the points by meeting just one or two requirements.
+1. **The report must include a relevant and extensive Discussion chapter** about the mandatory part of the task.
+2. **Consider the following workload of queries, with their approximate daily frequencies:**
+   1. Planned hours per course instance (8x/day)
+   2. Actual allocated hours per teacher per course instance (12x/day)
+   3. Teacher load per period (5x/day)
+   4. Course instances with planned vs actual variance >15% (3x/day)
+   5. Teachers allocated to more than N courses in current period (20x/day)
+   * Decide which queries benefit most from indices
+   * Which (if any) of the above queries should be turned into materialized views.
+   * Justify your choices based on query frequency, expected data size, freshness etc.
+   * Implement the chosen indices/views and run EXPLAIN ANALYZE before and after, comparing costs and runtimes.
+   * In the discussion chapter,  argue about trade-offs between normal views vs materialized views, index maintenance cost vs query performance, and what happens if workloads change.
+
+## Task 3, Programmatic Access
+### How To Prepare
+* Before solving this task you have to understand the lectures on [transactions](https://canvas.kth.se/courses/57087/pages/transactions) (given live and recorded) and on [Database Applications](https://canvas.kth.se/courses/57087/pages/database-applications) (only recorded, not given live).
+* Read the document [seminar3-tips-and-tricks.pdf](seminar_3/seminar3-tips-and-tricks.pdf)
+
+### When To Solve
+You're recommended to start working on this task as soon as possible after seminar 2, but remember to first do the preparations mentioned above. 
+The deadline for submitting the report is found on the [seminar 3 assignment page](https://canvas.kth.se/courses/57087/assignments/352979).
+
+### Intended Learning Outcomes
+* Describe how a program can access a database and write such a program
+
+### Mandatory Part
+**This project task has no mandatory part; you don't have to solve it unless you want points to improve your grade.**
+
+### Higher Grade Part, Task A (gives 5p)
+**The assignment is to develop part of course layout and teaching allocation's website.**
+You're however only required to develop a very limited set of functionalities. 
+Also, since focus here is on database access, you're not required to develop the web interface, but a command line user interface is sufficient. 
+You're allowed to reuse as much code as you wish from all classes in the view layer of the JDBC bank example at the page [Database Applications](https://canvas.kth.se/courses/57087/pages/database-applications), but all code included in your program is your responsibility. 
+You're not allowed to blame any deficiency in your application on the bank program. 
+Your program shall be stored in a public git repository, for example on GitHub. 
+The program is required to handle ACID transactions properly, which means autocommit must be turned off, instead the program must call commit and rollback as required. 
+Handling transactions properly also means that SELECT FOR UPDATE must be used when required. 
+Finally, you have to make sure the database contains sufficient data to check that all queries work as intended. 
+If needed, update the script that inserts data, created in task one. 
+You're allowed to change the database you created in task one if needed.
+
+The program must have the following functionality:
+
+1. **Compute the teaching cost (as planned and actually allocated) of a particular course  instance given in the current year.**
+You may assume (or calculate) the average salary for a teacher, for computation of the planned cost.
+
+**Table 8**. Expected output for query 4. 
+This example is only meant to illustrate the expected rows and columns. 
+It's perfectly fine to change text formatting, and also to change the values.
+
+| Course Code | Course Instance | Period | Planned Cost (in KSEK) | Actual Cost (in KSEK) |
+|-------------|-----------------|--------|------------------------|-----------------------|
+| IV1351      | 2025-50413      | P1     | 600                    | 745                   |
+
+2. **Modify the course instance:**
+Increase the number of registered students by 100 to the course instance you have selected at the previous step. 
+Now compute the teaching cost for that course instance again and see how the teaching cost is affected.<br><br>
+3. **Allocate and deallocate teaching loads:** 
+Allocate and deallocate teaching activities for various course instances for teachers. <br><br>
+Remember that a teacher is not allowed to teach (or get involved in any teaching activities) in more than four course instances in a particular period, your program must check that this limit is not exceeded. 
+You must demonstrate at least one allocation, one deallocation, and one case of throwing error for exceeding the limit.<br><br>
+4. **Add a new teaching activity called "Exercise",**  this new activity must be associated with at least one course layout/instance and must have one teacher allocated for the same. 
+Also, write a query to display the course layout/instance and allocation for the teacher which is affected by this new activity.
+
+Below follows guidelines for what shall be written in the report.
+
+* In the *Method* chapter of your report, mention which IDE(s) and other tool(s) you used and explain how you proceeded and reasoned when writing the program. 
+*Do not explain the result of each step you took, only explain the steps themselves.*
+* In the *Result* chapter of your report, briefly explain the program and in particular explain ACID transaction handling. 
+Include links to your git repository, and make sure the repository is public. 
+**Also include a printout of a sample run.** 
+The git repository must also contain the scripts that create the database and insert data. 
+It shall be possible to test your solution by executing first the script that creates the database, then the script that inserts data, and finally execute your program.
+* The *Discussion* chapter of your report must include a **relevant and extensive** evaluation of your program. 
+Suggested assessment criteria are found in [seminar3-assessment-criteria.pdf](seminar_3/seminar3-assessment-criteria.pdf), you do not have to cover them all. 
+**These same criteria will also be used to grade your project report.**
+
+### Higher Grade Part, Task B (gives 10p, since solving this task means also task A is solved)
+**This task is identical to task A, but the program being developed must also be well-designed and have a properly layered architecture.**
+The required level of design and architecture is that of the JDBC bank example at the page [Database Applications](https://canvas.kth.se/courses/57087/pages/database-applications). 
+The following must be shown in the discussion chapter of the report.
+
+* The code must be easy to understand. This is of course subjective, what is required is to show that you have tried sufficiently to make the code easy to understand.
+* The MVC and Layer patterns must be used correctly.  
+There must be enough layers, packages and classes. Neither controller nor model are allowed to contain any code related to the view (input or output). 
+Also, the integration layer (the DAO) is only allowed to contain methods that create, read, update or delete rows in the database. 
+There must not be any logic at all in the integration layer. 
+As an example, this means you're not allowed to have a method in a DAO that checks if a teacher is not fully loaded (having 4 courses), then checks if the teacher can be allocated teaching activities from some other course instances etc. 
+Instead, to handle this scenario, the controller must first call a method in a DAO that reads the allocations, then the controller checks if the teacher is available to take more activities,  then finally calls a DAO method that creates an allocation. 
+* There must not be any duplicated code.
 
 
