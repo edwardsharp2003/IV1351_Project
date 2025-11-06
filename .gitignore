@@ -30,7 +30,6 @@ $RECYCLE.BIN/
 *.lof
 *.log
 *.lot
-*.out
 *.toc
 *.synctex.gz
 *.fdb_latexmk
@@ -41,11 +40,6 @@ $RECYCLE.BIN/
 *.xdv
 *.pdfsync
 *.run.xml
-
-# Output folders (if you compile into a separate directory)
-build/
-out/
-latex.out/
 
 # ==========================
 # EDITOR/IDE FILES
@@ -60,7 +54,6 @@ latex.out/
 # IntelliJ IDEA / JetBrains
 .idea/
 *.iml
-out/
 
 # ==========================
 # OTHER COMMON IGNORE RULES
