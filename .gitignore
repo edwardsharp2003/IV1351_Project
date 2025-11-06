@@ -1,9 +1,95 @@
-# Default ignored files
-/shelf/
-/.idea/workspace.xml
-# Editor-based HTTP Client requests
-/httpRequests/
-# Datasource local storage ignored files
-/dataSources/
-/dataSources.local.xml
-.idea
+# ==========================
+# OS-SPECIFIC FILES
+# ==========================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+__MACOSX/
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.nfs*
+
+# ==========================
+# LATEX BUILD FILES
+# ==========================
+*.aux
+*.bbl
+*.blg
+*.brf
+*.idx
+*.ilg
+*.ind
+*.lof
+*.log
+*.lot
+*.out
+*.toc
+*.synctex.gz
+*.fdb_latexmk
+*.fls
+*.nav
+*.snm
+*.vrb
+*.xdv
+*.pdfsync
+*.run.xml
+
+# Output folders (if you compile into a separate directory)
+build/
+out/
+latex.out/
+
+# ==========================
+# EDITOR/IDE FILES
+# ==========================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ IDEA / JetBrains
+.idea/
+*.iml
+out/
+
+# ==========================
+# OTHER COMMON IGNORE RULES
+# ==========================
+# Logs and temporary files
+*.log
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.swp
+*.swo
+
+# ==========================
+# DATABASE / SQL
+# ==========================
+# Ignore exported data or local dumps
+*.sql~
+*.sqlite
+*.db
+*.db-journal
+dump.sql
+*.bak.sql
+
+# ==========================
+# CUSTOM
+# ==========================
+# Ignore private notes or generated results
+notes_private/
+drafts/
+tmp/

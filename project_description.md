@@ -134,15 +134,33 @@ please sign up for a group with name "Project Groups", which you can find by fol
 You are also allowed to work alone, but that is not recommended.  
 
 ## 4.1 Written Report
+The written report must follow this report template, [iv1351-report-template_new.pdf](https://canvas.kth.se/courses/57087/files/9571335?wrap=1). 
+Note that the template is a pdf, a similar document must be created. 
+Layout changes are allowed, it is only the content that's important. 
+The template pdf is created using latex, if you want to try that you can use the following tex file, [iv1351-report-template_new.tex](https://canvas.kth.se/courses/57087/files/9571336?wrap=1), 
+which was used to create the template pdf. 
+The report shall be submitted under the corresponding seminar, the report for task 1 is submitted under seminar 1, etc. 
+All submitted assignments should be on behalf of a project group, and will be plagiarism checked.
 
 ## 4.2 Seminar
+The seminar schedule is found on the [Seminar Schedule page](https://canvas.kth.se/courses/57087/pages/seminar-schedule), 
+and you can see which group you belong to on the [seminar groups page](https://canvas.kth.se/courses/57087/groups#). 
+To pass a seminar, you must have solved the specified tasks and participate in the discussion during the seminar. 
+It's not required that the solution is correct in all parts or that all statements made at the seminar are correct. 
+The seminars are divided into two parts, one for peer assessment and one for presentation.
 
-### 4.2.1
+### 4.2.1 First Seminar Part, Peer Assessment
+You'll be divided into groups of three, each group will assess the solutions of members of one other group. 
+The results of the assessments shall be uploaded to Canvas and emailed to the assessed student. 
+You're not required to bring a printout of your report.
 
-### 4.2.2
+### 4.2.2 Second Seminar Part, Presentation
+* One randomly chosen student from each group will give a five-minute presentation of their own solution to the entire seminar. 
+Prepare this presentation before the seminar.
+* One randomly chosen student from the assessing group will give comments on this solution and there will be a brief discussion. 
+Five minutes are allocated for comments and discussion together.
 
-
-
+# 5. Tasks
 
 
 
