@@ -51,6 +51,7 @@ it is NOT meant to show any rows or columns of a Table.
 | Lab           | 2.4    |
 | Tutorial      | 2.4    |
 | Seminar       | 1.8    |
+
 For example, for the course IV1351, in the course instance, Table 3, lecture hours are given 20 hours. 
 After applying the above rule/multiplication factor, the total hours for the lectures including preparation time would be 72 hours. 
 In other words, a teacher actually spends 72 hours for giving 20 hours lecture. 
