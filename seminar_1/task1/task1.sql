@@ -131,4 +131,57 @@ ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_1 FOREIGN KEY (t
 ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
 ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_1 FOREIGN KEY (course_instance_id,teaching_activity_id) REFERENCES planned_activity (course_instance_id,teaching_activity_id);
 
+-- Table for storing business rules (max 4 courses per teacher per period)
+CREATE TABLE system_rules (
+                              rule_name VARCHAR(100) NOT NULL,
+                              rule_value INT NOT NULL
+);
 
+ALTER TABLE system_rules ADD CONSTRAINT PK_system_rules PRIMARY KEY (rule_name);
+
+-- Insert the rule data (the number 4)
+INSERT INTO system_rules (rule_name, rule_value)
+VALUES ('max_courses_per_period', 4);
+
+-- Trigger function
+CREATE OR REPLACE FUNCTION check_course_allocation_limit()
+    RETURNS TRIGGER AS $$
+DECLARE
+    current_course_count INT;
+    max_limit INT;
+    new_study_period VARCHAR(10);
+BEGIN
+    -- 1. Get the max limit (the number 4) from our new table
+    SELECT rule_value INTO max_limit FROM system_rules WHERE rule_name = 'max_courses_per_period';
+
+    -- 2. Find the study_period for the course we are trying to add
+    SELECT study_period INTO new_study_period
+    FROM course_instance
+    WHERE course_instance_id = NEW.course_instance_id;
+
+    -- 3. Count courses employee is already teaching
+    SELECT COUNT(DISTINCT aa.course_instance_id)
+    INTO current_course_count
+    FROM activity_allocation aa
+             JOIN course_instance ci ON aa.course_instance_id = ci.course_instance_id
+    WHERE aa.employee_id = NEW.employee_id
+      AND ci.study_period = new_study_period
+      -- Don't count the course we are currently trying to add
+      AND aa.course_instance_id != NEW.course_instance_id;
+
+    -- 4. Check if limit is reached
+    IF current_course_count >= max_limit THEN
+        RAISE EXCEPTION 'Employee (ID: %) is already allocated to % courses in period %.',
+            NEW.employee_id, max_limit, new_study_period;
+    END IF;
+
+    -- If the check passes, allow the INSERT/UPDATE
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Attach trigger to table
+CREATE TRIGGER trg_check_allocation_limit
+    BEFORE INSERT ON activity_allocation
+    FOR EACH ROW
+EXECUTE FUNCTION check_course_allocation_limit();
