@@ -2,9 +2,9 @@ CREATE TABLE course_layout (
  course_layout_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  course_code    VARCHAR(10),
  course_name VARCHAR(500),
- min_students VARCHAR(500) NOT NULL,
- max_students VARCHAR(500) NOT NULL,
- hp DECIMAL(10)
+ min_students INT NOT NULL,
+ max_students INT NOT NULL,
+ hp DECIMAL(4,2)
 );
 
 ALTER TABLE course_layout ADD CONSTRAINT PK_course_layout PRIMARY KEY (course_layout_id);
@@ -12,8 +12,8 @@ ALTER TABLE course_layout ADD CONSTRAINT PK_course_layout PRIMARY KEY (course_la
 
 CREATE TABLE department (
  department_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- department_name  VARCHAR(10) NOT NULL,
- manager_id  INT GENERATED ALWAYS AS IDENTITY
+ department_name  VARCHAR(100) NOT NULL,
+ manager_id  INT
 );
 
 ALTER TABLE department ADD CONSTRAINT PK_department PRIMARY KEY (department_id);
@@ -25,8 +25,8 @@ CREATE TABLE employee (
  salary INT NOT NULL,
  person_id INT NOT NULL,
  job_title_id INT NOT NULL,
- manager_id INT NOT NULL,
- department_id INT NOT NULL
+ department_id INT NOT NULL,
+ manager_id INT
 );
 
 ALTER TABLE employee ADD CONSTRAINT PK_employee PRIMARY KEY (employee_id);
@@ -34,7 +34,7 @@ ALTER TABLE employee ADD CONSTRAINT PK_employee PRIMARY KEY (employee_id);
 
 CREATE TABLE job_title (
  job_title_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- job_title  VARCHAR(500)
+ job_title  VARCHAR(500) NOT NULL
 );
 
 ALTER TABLE job_title ADD CONSTRAINT PK_job_title PRIMARY KEY (job_title_id);
@@ -42,7 +42,7 @@ ALTER TABLE job_title ADD CONSTRAINT PK_job_title PRIMARY KEY (job_title_id);
 
 CREATE TABLE person (
  person_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- personal_number  VARCHAR(12) NOT NULL,
+ personal_number  CHAR(11) NOT NULL,
  first_name VARCHAR(500) NOT NULL,
  last_name VARCHAR(500) NOT NULL
 );
@@ -61,23 +61,24 @@ ALTER TABLE phone ADD CONSTRAINT PK_phone PRIMARY KEY (person_id,phone_number);
 CREATE TABLE teaching_activity (
  teaching_activity_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  activity_name VARCHAR(500) NOT NULL,
- factor DECIMAL(10)
+ factor DECIMAL(4,2)
 );
 
 ALTER TABLE teaching_activity ADD CONSTRAINT PK_teaching_activity PRIMARY KEY (teaching_activity_id);
 
 
 CREATE TABLE address (
+ address_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  person_id INT NOT NULL,
  address VARCHAR(500) NOT NULL
 );
 
-ALTER TABLE address ADD CONSTRAINT PK_address PRIMARY KEY (person_id,address);
+ALTER TABLE address ADD CONSTRAINT PK_address PRIMARY KEY (address_id);
 
 
 CREATE TABLE course_instance (
  course_instance_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- num_students VARCHAR(10) NOT NULL,
+ num_students INT NOT NULL,
  study_period VARCHAR(10),
  study_year VARCHAR(10),
  course_layout_id INT NOT NULL
@@ -96,13 +97,13 @@ ALTER TABLE planned_activity ADD CONSTRAINT PK_planned_activity PRIMARY KEY (cou
 
 
 CREATE TABLE activity_allocation  (
- allocation_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- employee_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
+ activity_allocation_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
+ employee_id INT NOT NULL,
  course_instance_id INT NOT NULL,
  teaching_activity_id INT NOT NULL
 );
 
-ALTER TABLE activity_allocation  ADD CONSTRAINT PK_activity_allocation  PRIMARY KEY (allocation_id,employee_id,course_instance_id,teaching_activity_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT PK_activity_allocation  PRIMARY KEY (activity_allocation_id);
 
 
 ALTER TABLE department ADD CONSTRAINT FK_department_0 FOREIGN KEY (manager_id ) REFERENCES employee (employee_id);
@@ -111,6 +112,7 @@ ALTER TABLE department ADD CONSTRAINT FK_department_0 FOREIGN KEY (manager_id ) 
 ALTER TABLE employee ADD CONSTRAINT FK_employee_0 FOREIGN KEY (person_id) REFERENCES person (person_id);
 ALTER TABLE employee ADD CONSTRAINT FK_employee_1 FOREIGN KEY (job_title_id) REFERENCES job_title (job_title_id);
 ALTER TABLE employee ADD CONSTRAINT FK_employee_2 FOREIGN KEY (department_id) REFERENCES department (department_id);
+ALTER TABLE employee ADD CONSTRAINT FK_employee_3 FOREIGN KEY (manager_id) REFERENCES employee (employee_id);
 
 
 ALTER TABLE phone ADD CONSTRAINT FK_phone_0 FOREIGN KEY (person_id) REFERENCES person (person_id);
@@ -126,7 +128,7 @@ ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_0 FOREIGN KEY (c
 ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_1 FOREIGN KEY (teaching_activity_id) REFERENCES teaching_activity (teaching_activity_id);
 
 
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _1 FOREIGN KEY (course_instance_id,teaching_activity_id) REFERENCES planned_activity (course_instance_id,teaching_activity_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_1 FOREIGN KEY (course_instance_id,teaching_activity_id) REFERENCES planned_activity (course_instance_id,teaching_activity_id);
 
 
