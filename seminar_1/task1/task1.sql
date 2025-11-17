@@ -21,7 +21,6 @@ ALTER TABLE department ADD CONSTRAINT PK_department PRIMARY KEY (department_id);
 
 CREATE TABLE employee (
  employee_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- skill_set VARCHAR(500),
  salary INT NOT NULL,
  person_id INT NOT NULL,
  job_title_id INT NOT NULL,
@@ -58,6 +57,14 @@ CREATE TABLE phone (
 ALTER TABLE phone ADD CONSTRAINT PK_phone PRIMARY KEY (person_id,phone_number);
 
 
+CREATE TABLE skill (
+ skill_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
+ skill_name VARCHAR(100) NOT NULL
+);
+
+ALTER TABLE skill ADD CONSTRAINT PK_skill PRIMARY KEY (skill_id);
+
+
 CREATE TABLE teaching_activity (
  teaching_activity_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  activity_name VARCHAR(500) NOT NULL,
@@ -85,6 +92,14 @@ CREATE TABLE course_instance (
 );
 
 ALTER TABLE course_instance ADD CONSTRAINT PK_course_instance PRIMARY KEY (course_instance_id);
+
+
+CREATE TABLE employee_skill (
+ employee_id INT NOT NULL,
+ skill_id INT NOT NULL
+);
+
+ALTER TABLE employee_skill ADD CONSTRAINT PK_employee_skill PRIMARY KEY (employee_id,skill_id);
 
 
 CREATE TABLE planned_activity (
@@ -122,6 +137,10 @@ ALTER TABLE address ADD CONSTRAINT FK_address_0 FOREIGN KEY (person_id) REFERENC
 
 
 ALTER TABLE course_instance ADD CONSTRAINT FK_course_instance_0 FOREIGN KEY (course_layout_id) REFERENCES course_layout (course_layout_id);
+
+
+ALTER TABLE employee_skill ADD CONSTRAINT FK_employee_skill_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
+ALTER TABLE employee_skill ADD CONSTRAINT FK_employee_skill_1 FOREIGN KEY (skill_id) REFERENCES skill (skill_id);
 
 
 ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_0 FOREIGN KEY (course_instance_id) REFERENCES course_instance (course_instance_id);
