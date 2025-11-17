@@ -85,3 +85,5 @@ dump.sql
 notes_private/
 drafts/
 tmp/
+
+*.asta.lock
