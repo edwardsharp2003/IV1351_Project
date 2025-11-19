@@ -88,3 +88,4 @@ tmp/
 
 *.asta.lock
 seminar_1/task1/task1.asta.lock
+seminar_1/task1/insert_data_v2.sql
