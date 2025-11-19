@@ -26,7 +26,7 @@ with open(FILENAME, "w") as f:
 
     # Study Period Types (Using Integers as requested in schema)
     # 1=P1, 2=P2, 3=P3, 4=P4, 5=P1-P2
-    valid_periods = [1, 2, 3, 4, 5]
+    valid_periods = [1, 2, 3, 4]
     f.write("-- Study Period Types\n")
     for p in valid_periods:
         f.write(f"INSERT INTO study_period_type (study_period_name) VALUES ({p});\n")
