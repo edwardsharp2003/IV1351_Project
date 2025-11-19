@@ -65,6 +65,13 @@ CREATE TABLE skill (
 ALTER TABLE skill ADD CONSTRAINT PK_skill PRIMARY KEY (skill_id);
 
 
+CREATE TABLE study_period_type (
+ study_period_name INT NOT NULL
+);
+
+ALTER TABLE study_period_type ADD CONSTRAINT PK_study_period_type PRIMARY KEY (study_period_name);
+
+
 CREATE TABLE teaching_activity (
  teaching_activity_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  activity_name VARCHAR(500) NOT NULL,
@@ -85,13 +92,13 @@ ALTER TABLE address ADD CONSTRAINT PK_address PRIMARY KEY (address_id);
 
 CREATE TABLE course_instance (
  course_instance_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
+ study_period_name INT NOT NULL,
  num_students INT NOT NULL,
- study_period VARCHAR(10),
  study_year VARCHAR(10),
  course_layout_id INT NOT NULL
 );
 
-ALTER TABLE course_instance ADD CONSTRAINT PK_course_instance PRIMARY KEY (course_instance_id);
+ALTER TABLE course_instance ADD CONSTRAINT PK_course_instance PRIMARY KEY (course_instance_id,study_period_name);
 
 
 CREATE TABLE employee_skill (
@@ -105,17 +112,19 @@ ALTER TABLE employee_skill ADD CONSTRAINT PK_employee_skill PRIMARY KEY (employe
 CREATE TABLE planned_activity (
  course_instance_id INT NOT NULL,
  teaching_activity_id INT NOT NULL,
+ study_period_name INT NOT NULL,
  planned_hours INT NOT NULL
 );
 
-ALTER TABLE planned_activity ADD CONSTRAINT PK_planned_activity PRIMARY KEY (course_instance_id,teaching_activity_id);
+ALTER TABLE planned_activity ADD CONSTRAINT PK_planned_activity PRIMARY KEY (course_instance_id,teaching_activity_id,study_period_name);
 
 
 CREATE TABLE activity_allocation  (
  activity_allocation_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  employee_id INT NOT NULL,
  course_instance_id INT NOT NULL,
- teaching_activity_id INT NOT NULL
+ teaching_activity_id INT NOT NULL,
+ study_period_name INT NOT NULL
 );
 
 ALTER TABLE activity_allocation  ADD CONSTRAINT PK_activity_allocation  PRIMARY KEY (activity_allocation_id);
@@ -136,71 +145,19 @@ ALTER TABLE phone ADD CONSTRAINT FK_phone_0 FOREIGN KEY (person_id) REFERENCES p
 ALTER TABLE address ADD CONSTRAINT FK_address_0 FOREIGN KEY (person_id) REFERENCES person (person_id);
 
 
-ALTER TABLE course_instance ADD CONSTRAINT FK_course_instance_0 FOREIGN KEY (course_layout_id) REFERENCES course_layout (course_layout_id);
+ALTER TABLE course_instance ADD CONSTRAINT FK_course_instance_0 FOREIGN KEY (study_period_name) REFERENCES study_period_type (study_period_name);
+ALTER TABLE course_instance ADD CONSTRAINT FK_course_instance_1 FOREIGN KEY (course_layout_id) REFERENCES course_layout (course_layout_id);
 
 
 ALTER TABLE employee_skill ADD CONSTRAINT FK_employee_skill_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
 ALTER TABLE employee_skill ADD CONSTRAINT FK_employee_skill_1 FOREIGN KEY (skill_id) REFERENCES skill (skill_id);
 
 
-ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_0 FOREIGN KEY (course_instance_id) REFERENCES course_instance (course_instance_id);
+ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_0 FOREIGN KEY (course_instance_id,study_period_name) REFERENCES course_instance (course_instance_id,study_period_name);
 ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_1 FOREIGN KEY (teaching_activity_id) REFERENCES teaching_activity (teaching_activity_id);
 
 
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_1 FOREIGN KEY (course_instance_id,teaching_activity_id) REFERENCES planned_activity (course_instance_id,teaching_activity_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _1 FOREIGN KEY (course_instance_id,teaching_activity_id,study_period_name) REFERENCES planned_activity (course_instance_id,teaching_activity_id,study_period_name);
 
--- Table for storing business rules (max 4 courses per teacher per period)
-CREATE TABLE system_rules (
-                              rule_name VARCHAR(100) NOT NULL,
-                              rule_value INT NOT NULL
-);
 
-ALTER TABLE system_rules ADD CONSTRAINT PK_system_rules PRIMARY KEY (rule_name);
-
--- Insert the rule data (the number 4)
-INSERT INTO system_rules (rule_name, rule_value)
-VALUES ('max_courses_per_period', 4);
-
--- Trigger function
-CREATE OR REPLACE FUNCTION check_course_allocation_limit()
-    RETURNS TRIGGER AS $$
-DECLARE
-    current_course_count INT;
-    max_limit INT;
-    new_study_period VARCHAR(10);
-BEGIN
-    -- 1. Get the max limit (the number 4) from our new table
-    SELECT rule_value INTO max_limit FROM system_rules WHERE rule_name = 'max_courses_per_period';
-
-    -- 2. Find the study_period for the course we are trying to add
-    SELECT study_period INTO new_study_period
-    FROM course_instance
-    WHERE course_instance_id = NEW.course_instance_id;
-
-    -- 3. Count courses employee is already teaching
-    SELECT COUNT(DISTINCT aa.course_instance_id)
-    INTO current_course_count
-    FROM activity_allocation aa
-             JOIN course_instance ci ON aa.course_instance_id = ci.course_instance_id
-    WHERE aa.employee_id = NEW.employee_id
-      AND ci.study_period = new_study_period
-      -- Don't count the course we are currently trying to add
-      AND aa.course_instance_id != NEW.course_instance_id;
-
-    -- 4. Check if limit is reached
-    IF current_course_count >= max_limit THEN
-        RAISE EXCEPTION 'Employee (ID: %) is already allocated to % courses in period %.',
-            NEW.employee_id, max_limit, new_study_period;
-    END IF;
-
-    -- If the check passes, allow the INSERT/UPDATE
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
--- Attach trigger to table
-CREATE TRIGGER trg_check_allocation_limit
-    BEFORE INSERT ON activity_allocation
-    FOR EACH ROW
-EXECUTE FUNCTION check_course_allocation_limit();
