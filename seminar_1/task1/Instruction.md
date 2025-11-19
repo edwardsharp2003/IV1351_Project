@@ -16,10 +16,19 @@ CREATE DATABASE iv1351t1;
 \c iv1351t1;
 ```
 
-3. insert the sql setup file
+3. set search path to public 
+
+```
+SET search_path TO public;
+```
+
+4. insert the sql setup file
 ```
 \i <realative-path-to-the-setup-script/seminar_1/task1.sql >
 ```
 
 ## For reset of the database [during development]
-1. DROP DATABASE "<database-name>";
+1. 
+```
+DROP DATABASE "<database-name>";
+```
