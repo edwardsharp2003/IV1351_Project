@@ -7,7 +7,7 @@ fake = Faker()
 NUM_PEOPLE = 50
 NUM_COURSES = 10
 NUM_INSTANCES = 30
-FILENAME = "insert_data_v2.sql"
+FILENAME = "insert_data.sql"
 
 
 def escape_sql(text):

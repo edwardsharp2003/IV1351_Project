@@ -180,7 +180,7 @@ ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_0 FOREIGN KEY (t
 ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_1 FOREIGN KEY (course_instance_id,study_period_id) REFERENCES course_instance_period (course_instance_id,study_period_id);
 
 
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _1 FOREIGN KEY (teaching_activity_id,course_instance_id,study_period_id) REFERENCES planned_activity (teaching_activity_id,course_instance_id,study_period_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_1 FOREIGN KEY (teaching_activity_id,course_instance_id,study_period_id) REFERENCES planned_activity (teaching_activity_id,course_instance_id,study_period_id);
 
 
