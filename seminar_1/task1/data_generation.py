@@ -17,21 +17,14 @@ def escape_sql(text: str) -> str:
 print(f"Generating data for NEW schema into {FILENAME}...")
 
 with open(FILENAME, "w") as f:
-    f.write("-- Generated Data Script (for updated schema with salary_history_id on employee)\n")
-    f.write("-- NOTE: Run this on a clean database after running task1.sql\n\n")
-
-    # ---------------------------------------------------------
-    # 0. FIX CIRCULAR FK BETWEEN EMPLOYEE <-> SALARY_HISTORY
-    # ---------------------------------------------------------
-    f.write("-- Temporarily drop circular salary constraints (if they exist)\n")
-    f.write("ALTER TABLE employee DROP CONSTRAINT IF EXISTS FK_employee_4;\n")
-    f.write("ALTER TABLE salary_history DROP CONSTRAINT IF EXISTS FK_salary_history_0;\n\n")
+    f.write("-- Generated Data Script V2 (for updated schema)\n")
+    f.write("-- Note: Run this on a clean database (DROP/CREATE first)\n\n")
 
     # ---------------------------------------------------------
     # 1. LOOKUP TABLES & INDEPENDENT DATA
     # ---------------------------------------------------------
 
-    # Study Period Types (integer IDs)
+    # Study Period Types (now just integer IDs)
     study_periods = [1, 2, 3, 4]
     f.write("-- Study Period Types\n")
     for sp in study_periods:
@@ -67,7 +60,7 @@ with open(FILENAME, "w") as f:
             f"VALUES ('{name}', {factor});\n"
         )
 
-    # Course Layouts (with valid_from DATE)
+    # Course Layouts (now with valid_from DATE)
     course_layouts = [
         ("CE101", "Intro to Civil Engineering"),
         ("IT202", "Databases for Engineers"),
@@ -96,16 +89,6 @@ with open(FILENAME, "w") as f:
     # ---------------------------------------------------------
     f.write("\n-- People, Employees, Phones, Addresses\n")
 
-    # We rely on identity columns to assign:
-    # person_id       = 1..NUM_PEOPLE   (order of insert)
-    # employee_id     = 1..NUM_PEOPLE   (order of insert)
-    # salary_history_id = 1..NUM_PEOPLE (order of insert later)
-    #
-    # We will set:
-    #   employee.salary_history_id = i
-    #   salary_history.employee_id = i
-    # so that when we re-add the FKs, the circular relation is valid.
-
     for i in range(1, NUM_PEOPLE + 1):
         # Person
         sex = random.choice(["M", "F"])
@@ -115,7 +98,7 @@ with open(FILENAME, "w") as f:
         # personal_number = yymmdd-xxxx (CHAR(11))
         year = random.randint(1950, 2002)
         month = random.randint(1, 12)
-        day = random.randint(1, 28)  # always valid
+        day = random.randint(1, 28)  # keep always valid
         suffix = random.randint(0, 9999)
         p_num = f"{year % 100:02d}{month:02d}{day:02d}-{suffix:04d}"
 
@@ -134,29 +117,21 @@ with open(FILENAME, "w") as f:
             f"INSERT INTO phone (person_id, phone_number) VALUES ({i}, '{phone}');\n"
         )
 
-        # Employee
+        # Employee (no salary here anymore!)
         dept_id = random.randint(1, len(departments))
         job_id = random.randint(1, len(job_titles))
-
-        # manager_id is NOT NULL and FK to employee(employee_id).
-        # For employee i, we choose a manager between 1 and i (self-manager allowed).
-        mgr_id = random.randint(1, i)
-
-        # salary_history_id will be i (we'll insert matching salary_history rows later)
-        salary_hist_id = i
+        # First 5 employees have no manager; others get a manager among 1..5
+        mgr_id = "NULL" if i <= 5 else random.randint(1, 5)
 
         f.write(
-            "INSERT INTO employee (person_id, job_title_id, department_id, manager_id, salary_history_id) "
-            f"VALUES ({i}, {job_id}, {dept_id}, {mgr_id}, {salary_hist_id});\n"
+            "INSERT INTO employee (person_id, job_title_id, department_id, manager_id) "
+            f"VALUES ({i}, {job_id}, {dept_id}, {mgr_id});\n"
         )
 
     # ---------------------------------------------------------
-    # 3. SALARY HISTORY (paired 1:1 with employees)
+    # 3. SALARY HISTORY (new table)
     # ---------------------------------------------------------
     f.write("\n-- Salary History\n")
-    # We assume:
-    #  - employee_id for employees is 1..NUM_PEOPLE
-    #  - salary_history_id will be 1..NUM_PEOPLE in insert order (identity)
     for emp_id in range(1, NUM_PEOPLE + 1):
         salary = random.randint(30000, 65000)
         f.write(
@@ -182,15 +157,11 @@ with open(FILENAME, "w") as f:
         )
 
     f.write("\n-- Course Instance Periods\n")
-    # For each course_instance, create exactly one period row.
-    # course_instance_period.course_instance_id is IDENTITY, and has FK to course_instance.
-    # Because both tables are empty and we insert NUM_INSTANCES rows in each,
-    # their IDs will both be 1..NUM_INSTANCES and the FK will be satisfied.
-    #
-    # We track a "logical" ci_id (1..NUM_INSTANCES) which corresponds to the identity value.
+    # For each course_instance, create exactly one period row
     course_instance_periods = []  # list of dicts {ci_id, sp_id}
     for ci_id in course_instances:
         sp_id = random.choice(study_periods)
+        # course_instance_id is IDENTITY here, so we only insert study_period_id
         f.write(
             f"INSERT INTO course_instance_period (study_period_id) VALUES ({sp_id});\n"
         )
@@ -216,19 +187,20 @@ with open(FILENAME, "w") as f:
     # ---------------------------------------------------------
     f.write("\n-- Planned Activities\n")
 
-    # Structure: planned_activity(teaching_activity_id, course_instance_id, study_period_id, planned_hours)
-    # FK to course_instance_period(course_instance_id, study_period_id).
+    # We'll create exactly one planned_activity per course_instance_period,
+    # relying on identity sequences to line up with course_instance_period IDs.
     planned_activities = []  # list of dicts {ci_id, ta_id, sp_id}
 
     for cip in course_instance_periods:
-        ci_id = cip["ci_id"]   # logical course_instance_id (1..NUM_INSTANCES)
+        ci_id = cip["ci_id"]  # logical ID, not written explicitly
         sp_id = cip["sp_id"]
         ta_id = random.randint(1, len(teaching_activities))
         hours = random.randint(10, 50)
 
+        # course_instance_id in this table is IDENTITY; we omit it.
         f.write(
-            "INSERT INTO planned_activity (teaching_activity_id, course_instance_id, study_period_id, planned_hours) "
-            f"VALUES ({ta_id}, {ci_id}, {sp_id}, {hours});\n"
+            "INSERT INTO planned_activity (teaching_activity_id, study_period_id, planned_hours) "
+            f"VALUES ({ta_id}, {sp_id}, {hours});\n"
         )
 
         planned_activities.append({"ci_id": ci_id, "ta_id": ta_id, "sp_id": sp_id})
@@ -238,23 +210,22 @@ with open(FILENAME, "w") as f:
     # ---------------------------------------------------------
     f.write("\n-- Activity Allocations\n")
 
-    # activity_allocation(activity_allocation_id IDENTITY,
-    #                     employee_id, teaching_activity_id, course_instance_id, study_period_id)
-    # FK (teaching_activity_id, course_instance_id, study_period_id) -> planned_activity
-
+    # We'll create exactly one allocation per planned_activity,
+    # again relying on identity sequences lining up row-by-row.
     for pa in planned_activities:
         emp_id = random.randint(1, NUM_PEOPLE)
         ta_id = pa["ta_id"]
         sp_id = pa["sp_id"]
-        ci_id = pa["ci_id"]
 
+        # activity_allocation_id and course_instance_id are IDENTITY columns;
+        # we omit them and only set the FK columns we control.
         f.write(
-            "INSERT INTO activity_allocation (employee_id, teaching_activity_id, course_instance_id, study_period_id) "
-            f"VALUES ({emp_id}, {ta_id}, {ci_id}, {sp_id});\n"
+            "INSERT INTO activity_allocation (employee_id, teaching_activity_id, study_period_id) "
+            f"VALUES ({emp_id}, {ta_id}, {sp_id});\n"
         )
 
     # ---------------------------------------------------------
-    # 8. SET DEPARTMENT MANAGERS (AFTER EMPLOYEES EXIST)
+    # 8. CLEANUP CIRCULAR DEPENDENCY: SET DEPARTMENT MANAGERS
     # ---------------------------------------------------------
     f.write("\n-- Update Departments Manager\n")
     for dep_id in range(1, len(departments) + 1):
@@ -263,18 +234,5 @@ with open(FILENAME, "w") as f:
             f"UPDATE department SET manager_id = {mgr_id} "
             f"WHERE department_id = {dep_id};\n"
         )
-
-    # ---------------------------------------------------------
-    # 9. RE-ADD CIRCULAR SALARY CONSTRAINTS
-    # ---------------------------------------------------------
-    f.write("\n-- Re-add circular salary constraints\n")
-    f.write(
-        "ALTER TABLE salary_history "
-        "ADD CONSTRAINT FK_salary_history_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);\n"
-    )
-    f.write(
-        "ALTER TABLE employee "
-        "ADD CONSTRAINT FK_employee_4 FOREIGN KEY (salary_history_id) REFERENCES salary_history (salary_history_id);\n"
-    )
 
 print(f"Done! Created {FILENAME}")
