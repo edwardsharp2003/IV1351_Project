@@ -27,7 +27,12 @@ SET search_path TO public;
 \i <realative-path-to-the-setup-script/seminar_1/task1.sql >
 ```
 
-5. insert the generated data into the created database
+5. set constraints for limit on 4 courses per teacher
+```
+\i <realative-path-to-the-setup-script/seminar_1/check_allocation_limit.sql >
+```
+
+6. insert the generated data into the created database
 ```
 \i <realative-path-to-the-setup-script/seminar_1/insert_data.sql >
 ```
