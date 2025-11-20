@@ -27,8 +27,13 @@ SET search_path TO public;
 \i <realative-path-to-the-setup-script/seminar_1/task1.sql >
 ```
 
+5. insert the generated data into the created database
+```
+\i <realative-path-to-the-setup-script/seminar_1/insert_data.sql >
+```
+
 ## For reset of the database [during development]
 1. 
 ```
-DROP DATABASE "<database-name>";
+DROP DATABASE iv1351t1;
 ```
