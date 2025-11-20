@@ -25,7 +25,8 @@ CREATE TABLE employee (
  person_id INT NOT NULL,
  job_title_id INT NOT NULL,
  department_id INT NOT NULL,
- manager_id INT
+ manager_id INT NOT NULL,
+ salary_history_id INT NOT NULL
 );
 
 ALTER TABLE employee ADD CONSTRAINT PK_employee PRIMARY KEY (employee_id);
@@ -128,7 +129,7 @@ ALTER TABLE employee_skill ADD CONSTRAINT PK_employee_skill PRIMARY KEY (employe
 
 CREATE TABLE planned_activity (
  teaching_activity_id INT NOT NULL,
- course_instance_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
+ course_instance_id INT NOT NULL,
  study_period_id INT NOT NULL,
  planned_hours INT NOT NULL
 );
@@ -140,7 +141,7 @@ CREATE TABLE activity_allocation  (
  activity_allocation_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  employee_id INT NOT NULL,
  teaching_activity_id INT NOT NULL,
- course_instance_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
+ course_instance_id INT NOT NULL,
  study_period_id INT NOT NULL
 );
 
@@ -154,6 +155,7 @@ ALTER TABLE employee ADD CONSTRAINT FK_employee_0 FOREIGN KEY (person_id) REFERE
 ALTER TABLE employee ADD CONSTRAINT FK_employee_1 FOREIGN KEY (job_title_id) REFERENCES job_title (job_title_id);
 ALTER TABLE employee ADD CONSTRAINT FK_employee_2 FOREIGN KEY (department_id) REFERENCES department (department_id);
 ALTER TABLE employee ADD CONSTRAINT FK_employee_3 FOREIGN KEY (manager_id) REFERENCES employee (employee_id);
+ALTER TABLE employee ADD CONSTRAINT FK_employee_4 FOREIGN KEY (salary_history_id) REFERENCES salary_history (salary_history_id);
 
 
 ALTER TABLE phone ADD CONSTRAINT FK_phone_0 FOREIGN KEY (person_id) REFERENCES person (person_id);
@@ -180,7 +182,7 @@ ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_0 FOREIGN KEY (t
 ALTER TABLE planned_activity ADD CONSTRAINT FK_planned_activity_1 FOREIGN KEY (course_instance_id,study_period_id) REFERENCES course_instance_period (course_instance_id,study_period_id);
 
 
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
-ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation _1 FOREIGN KEY (teaching_activity_id,course_instance_id,study_period_id) REFERENCES planned_activity (teaching_activity_id,course_instance_id,study_period_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_0 FOREIGN KEY (employee_id) REFERENCES employee (employee_id);
+ALTER TABLE activity_allocation  ADD CONSTRAINT FK_activity_allocation_1 FOREIGN KEY (teaching_activity_id,course_instance_id,study_period_id) REFERENCES planned_activity (teaching_activity_id,course_instance_id,study_period_id);
 
 
