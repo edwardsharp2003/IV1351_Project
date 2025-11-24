@@ -24,6 +24,7 @@ GROUP BY
     teacher_name,
     activity_allocation.study_period_id;
 
---- to see view:
+/*
+to see view:
 SELECT * FROM teacher_course_allocation WHERE study_period_id = 3;
-
+*/
