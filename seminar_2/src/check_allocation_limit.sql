@@ -17,34 +17,39 @@ CREATE OR REPLACE FUNCTION check_course_allocation_limit()
 DECLARE
     current_course_count INT;
     max_limit INT;
-    target_period_id INT;
 BEGIN
-    -- A. Get the max limit (4) from system_rules
-    SELECT rule_value INTO max_limit
-    FROM system_rules
-    WHERE rule_name = 'max_courses_per_period';
+    -- Get the max limit from system_rules
+    SELECT rule_value INTO max_limit FROM system_rules WHERE rule_name = 'max_courses_per_period';
 
-    -- B. Find the study_period_id from the new row being inserted/updated
-    -- FIX: Changed 'study_period_name' to 'study_period_id' to match table schema
-    target_period_id := NEW.study_period_id;
-
-    -- C. Count courses employee is already teaching
-    SELECT COUNT(DISTINCT aa.course_instance_id)
+    -- Count distinct course instances for the employee in the target period
+    SELECT COUNT(DISTINCT course_instance_id)
     INTO current_course_count
-    FROM activity_allocation aa
-    WHERE aa.employee_id = NEW.employee_id
-      -- FIX: Use study_period_id for comparison
-      AND aa.study_period_id = target_period_id
-      -- This accounts for the new row being inserted/updated
-      AND aa.course_instance_id != NEW.course_instance_id;
+    FROM activity_allocation
+    WHERE employee_id = NEW.employee_id
+      AND study_period_id = NEW.study_period_id;
 
-    -- D. Check if limit is reached
-    IF current_course_count >= max_limit THEN
-        RAISE EXCEPTION 'Employee (ID: %) is already allocated to % courses in Period ID %.',
-            NEW.employee_id, max_limit, target_period_id;
+    -- Check if the new allocation would exceed the limit
+    IF TG_OP = 'INSERT' AND current_course_count >= max_limit THEN
+        RAISE EXCEPTION 'Employee (ID: %) cannot be allocated to more than % courses in Period ID %.',
+            NEW.employee_id, max_limit, NEW.study_period_id;
     END IF;
 
-    -- If the check passes, allow the INSERT/UPDATE
+    -- For updates, the logic is more complex. If the employee or period changes, it's like a new allocation.
+    -- This simplified version just re-checks, but a more robust solution might be needed.
+    IF TG_OP = 'UPDATE' AND (NEW.employee_id != OLD.employee_id OR NEW.study_period_id != OLD.study_period_id) THEN
+        SELECT COUNT(DISTINCT course_instance_id)
+        INTO current_course_count
+        FROM activity_allocation
+        WHERE employee_id = NEW.employee_id
+          AND study_period_id = NEW.study_period_id;
+
+        IF current_course_count >= max_limit THEN
+            RAISE EXCEPTION 'Employee (ID: %) cannot be allocated to more than % courses in Period ID %.',
+                NEW.employee_id, max_limit, NEW.study_period_id;
+        END IF;
+    END IF;
+
+
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
