@@ -22,8 +22,8 @@ JOIN
 GROUP BY
     employee.employee_id,
     teacher_name,
-    activity_allocation.study_period_id
+    activity_allocation.study_period_id;
 
-/* to see view:
-   SELECT * FROM teacher_course_allocation WHERE study_period_id = 3;
- */
+--- to see view:
+SELECT * FROM teacher_course_allocation WHERE study_period_id = 3;
+
