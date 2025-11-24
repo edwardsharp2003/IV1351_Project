@@ -19,15 +19,11 @@ JOIN
     person ON person.person_id = employee.person_id
 JOIN
     activity_allocation ON activity_allocation.employee_id = employee.employee_id
-WHERE
-    activity_allocation.study_period_id = 3
 GROUP BY
     employee.employee_id,
     teacher_name,
     activity_allocation.study_period_id
 
-
-
-/* to run:
-   SELECT * FROM teacher_course_allocation;
+/* to see view:
+   SELECT * FROM teacher_course_allocation WHERE study_period_id = 3;
  */
