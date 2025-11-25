@@ -68,7 +68,7 @@ JOIN
 JOIN
     course_instance_period ON course_instance.course_instance_id = course_instance_period.course_instance_id
 JOIN
-    planned_activity ON course_instance.course_instance_id = planned_activity.course_instance_id AND course_instance_period.study_period_id = planned_activity.study_period_id
+    planned_activity ON course_instance_period.course_instance_id = planned_activity.course_instance_id AND course_instance_period.study_period_id = planned_activity.study_period_id
 JOIN
     teaching_activity ON planned_activity.teaching_activity_id = teaching_activity.teaching_activity_id
 WHERE

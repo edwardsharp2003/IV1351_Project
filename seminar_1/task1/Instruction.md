@@ -1,5 +1,9 @@
 ## script for create the database for Seminar task1 
 
+### 
+
+
+
 If you use the postgres in the terminal on mac, start with running the postrgres client
 
 1. start the postgres client
