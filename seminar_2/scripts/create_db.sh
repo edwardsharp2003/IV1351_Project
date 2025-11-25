@@ -35,7 +35,7 @@ echo "Database '$DB_NAME' created successfully."
 
 # 2. Run the Python script to generate data.
 echo "Running Python script to generate data: $PYTHON_SCRIPT..."
-python3 "$PYTHON_SCRIPT"
+"$SCRIPT_DIR/../../venv/bin/python3" "$PYTHON_SCRIPT"
 echo "Data generation complete."
 
 # 3. Run the setup SQL script.
