@@ -9,35 +9,29 @@ Course code | course instance id | HP | Teacher's Name | Designation | lecture H
 
 CREATE OR REPLACE VIEW planned_hours_per_teacher AS
 SELECT
-    course_layout.course_code,
-    course_instance.course_instance_id,
-    course_layout.HP,
-    person.first_name || ' ' || person.last_name AS "Teacher's name",
-    job_title.job_title AS Designation
+    cl.course_code AS "Course code",
+    ci.course_instance_id AS "Course Instance ID",
+    cl.HP AS "HP",
+    p.first_name || ' ' || p.last_name AS "Teacher's name",
+    jt.job_title AS "Designation"
 FROM
-    course_instance
+    activity_allocation aa
 JOIN
-    course_layout ON course_instance.course_layout_id = course_layout.course_layout_id
+    planned_activity pa ON aa.teaching_activity_id = pa.teaching_activity_id AND
+    aa.course_instance_id = pa.course_instance_id AND
+    aa.study_period_id = pa.study_period_id
 JOIN
-    course_instance_period ON course_instance.course_instance_id = course_instance_period.course_instance_id
+    course_instance ci ON aa.course_instance_id = ci.course_instance_id
 JOIN
-    planned_activity ON course_instance_period.course_instance_id = planned_activity.course_instance_id AND
-    course_instance_period.study_period_id = planned_activity.study_period_id
+    course_layout cl ON ci.course_layout_id = cl.course_layout_id
 JOIN
-    activity_allocation ON planned_activity.teaching_activity_id = activity_allocation.teaching_activity_id AND
-    planned_activity.course_instance_id = activity_allocation.course_instance_id AND
-    planned_activity.study_period_id = activity_allocation.study_period_id
+    employee e ON aa.employee_id = e.employee_id
 JOIN
-    employee ON activity_allocation.employee_id = employee.employee_id
+    person p ON e.person_id = p.person_id
 JOIN
-    person ON employee.person_id = person.person_id
-JOIN
-    job_title ON employee.job_title_id = job_title.job_title_id
-
-ORDER BY
-    course_layout.course_code,
-    course_instance.course_instance_id,
-    "Teacher's name";
+    job_title jt ON e.job_title_id = jt.job_title_id
+WHERE
+    cl.course_code = 'CE101';
 
 /*
 SELECT * FROM planned_hours_per_teacher;
