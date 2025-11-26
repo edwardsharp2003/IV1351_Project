@@ -31,7 +31,7 @@ JOIN
 JOIN
     job_title jt ON e.job_title_id = jt.job_title_id
 WHERE
-    cl.course_code = 'CE101';
+    cl.course_code = 'DD2350';
 
 /*
 SELECT * FROM planned_hours_per_teacher;

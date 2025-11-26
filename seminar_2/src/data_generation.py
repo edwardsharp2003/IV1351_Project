@@ -1,13 +1,15 @@
 import random
+import os
 from faker import Faker
 
 fake = Faker()
 
 # CONFIGURATION
-NUM_PEOPLE = 50
-NUM_COURSES = 10
-NUM_INSTANCES = 30
-FILENAME = "insert_data.sql"
+NUM_PEOPLE = 100
+NUM_COURSES = 50
+NUM_INSTANCES = 100
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+FILENAME = os.path.join(SCRIPT_DIR, "insert_data.sql")
 
 
 def escape_sql(text: str) -> str:
@@ -59,7 +61,7 @@ with open(FILENAME, "w") as f:
         f.write(f"INSERT INTO skill (skill_name) VALUES ('{skill}');\n")
 
     # Teaching Activities
-    teaching_activities = [("Lecture", 1.0), ("Lab", 2.0), ("Seminar", 1.5), ("Project", 0.5)]
+    teaching_activities = [("Lecture", 2.0), ("Lab", 1.7), ("Seminar", 1.5), ("Project", 0.5)]
     f.write("\n-- Teaching Activities\n")
     for name, factor in teaching_activities:
         f.write(
@@ -69,22 +71,61 @@ with open(FILENAME, "w") as f:
 
     # Course Layouts (with valid_from DATE)
     course_layouts = [
-        ("CE101", "Intro to Civil Engineering"),
-        ("IT202", "Databases for Engineers"),
-        ("CE305", "Structural Analysis"),
-        ("IT301", "BIM Data Management"),
-        ("CE400", "Geotechnical Engineering"),
-        ("IT101", "Programming in Python"),
-        ("CE202", "Fluid Mechanics"),
-        ("AT105", "CAD Fundamentals"),
-        ("UP201", "Urban GIS Systems"),
-        ("CE500", "Master Thesis Project"),
+        ('AL1523', 'Digitalisation and Innovation for Sustainable Development', 7.5),
+        ('DD1351', 'Logic for Computer Scientists', 7.5),
+        ('DD2350', 'Algorithms, Data Structures and Complexity', 9.5),
+        ('DD2352', 'Algorithms and Complexity', 7.5),
+        ('DD2401', 'Neuroscience', 7.5),
+        ('DH2642', 'Interaction Programming and the Dynamic Web', 7.5),
+        ('EL1020', 'Automatic Control, general course', 6.0),
+        ('EQ1110', 'Continuous Time Signals and Systems', 6.0),
+        ('EQ1120', 'Discrete Time Signals and Systems', 6.0),
+        ('IA150X', 'Degree Project in Information and Communication Technology', 15.0),
+        ('ID1018', 'Programming I', 7.5),
+        ('ID1021', 'Algorithms and Data Structures', 7.5),
+        ('ID1206', 'Operating Systems', 7.5),
+        ('ID1214', 'Artificial Intelligence and Applied Methods', 7.5),
+        ('ID1217', 'Concurrent Programming', 7.5),
+        ('ID2201', 'Distributed Systems, Basic Course', 7.5),
+        ('ID2202', 'Compilers and Execution Environments', 7.5),
+        ('ID2216', 'Developing Mobile Applications', 7.5),
+        ('IE1204', 'Digital Design', 7.5),
+        ('IE1206', 'Embedded Electronics', 7.5),
+        ('II1303', 'Signal Processing', 7.5),
+        ('II1305', 'Project in Information and Communication Technology', 7.5),
+        ('II1307', 'Active Career', 1.5),
+        ('II1308', 'Introduction to Programming', 1.5),
+        ('IK1203', 'Networks and Communication', 7.5),
+        ('IK1330', 'Wireless Systems', 7.5),
+        ('IL1333', 'Hardware Security', 7.5),
+        ('IS1200', 'Computer Hardware Engineering', 7.5),
+        ('IS1300', 'Embedded Systems', 7.5),
+        ('IS2202', 'Computer Systems Architecture', 7.5),
+        ('IV1013', 'Introduction to Computer Security', 7.5),
+        ('IV1350', 'Object Oriented Design', 7.5),
+        ('IV1351', 'Data Storage Paradigms', 7.5),
+        ('LS1601', 'Intercultural competence', 4.5),
+        ('LS2442', 'English for Employment', 7.5),
+        ('ME1003', 'Industrial Management, Basic Course', 6.0),
+        ('ME2016', 'Project Management: Leadership and Control', 6.0),
+        ('ME2163', 'Leading People and Organizations in Different Contexts', 6.0),
+        ('SF1546', 'Numerical Methods, Basic Course', 6.0),
+        ('SF1610', 'Discrete Mathematics', 7.5),
+        ('SF1624', 'Algebra and Geometry', 7.5),
+        ('SF1625', 'Calculus in One Variable', 7.5),
+        ('SF1633', 'Differential Equations I', 6.0),
+        ('SF1683', 'Differential Equations and Transforms', 9.0),
+        ('SF1686', 'Calculus in Several Variable', 7.5),
+        ('SF1689', 'Basic Course in Mathematics', 6.0),
+        ('SF1912', 'Probability Theory and Statistics', 6.0),
+        ('SG1102', 'Mechanics, Smaller Course', 6.0),
+        ('SH1011', 'Modern Physics', 7.5),
+        ('SK1118', 'Electromagnetism and Waves', 7.5),
     ]
     f.write("\n-- Course Layouts\n")
-    for code, name in course_layouts:
-        hp = random.choice([7.5, 15.0])
-        min_s = random.randint(10, 20)
-        max_s = random.randint(30, 100)
+    for code, name, hp in course_layouts:
+        min_s = random.randint(50, 150)
+        max_s = random.randint(150, 300)
         valid_from = "2020-01-01"
         f.write(
             "INSERT INTO course_layout (course_code, course_name, min_students, max_students, hp, valid_from) "
