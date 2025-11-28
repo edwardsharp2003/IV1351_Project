@@ -7,7 +7,7 @@ fake = Faker()
 # CONFIGURATION
 NUM_PEOPLE = 100
 NUM_COURSES = 50
-NUM_INSTANCES = 100
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 FILENAME = os.path.join(SCRIPT_DIR, "insert_data.sql")
 
@@ -210,17 +210,21 @@ with open(FILENAME, "w") as f:
     # ---------------------------------------------------------
     f.write("\n-- Course Instances\n")
 
-    # We'll assume course_instance_id will be 1..NUM_INSTANCES in insert order
-    course_instances = list(range(1, NUM_INSTANCES + 1))
+    # Define the range of years to generate instances for
+    years_to_generate = range(2015, 2026)  # 2015 to 2025 inclusive
 
-    for _ci in course_instances:
-        layout_id = random.randint(1, len(course_layouts))
-        num_studs = random.randint(15, 80)
-        year_str = "2024"
-        f.write(
-            "INSERT INTO course_instance (num_students, study_year, course_layout_id) "
-            f"VALUES ({num_studs}, '{year_str}', {layout_id});\n"
-        )
+    num_total_instances = len(course_layouts) * len(years_to_generate)
+    course_instances = list(range(1, num_total_instances + 1))
+
+    for year in years_to_generate:
+        year_str = str(year)
+        # The layout_id is 1-based, matching the assumed identity/serial column for course_layout
+        for layout_id in range(1, len(course_layouts) + 1):
+            num_studs = random.randint(15, 80)
+            f.write(
+                "INSERT INTO course_instance (num_students, study_year, course_layout_id) "
+                f"VALUES ({num_studs}, '{year_str}', {layout_id});\n"
+            )
 
     f.write("\n-- Course Instance Periods\n")
     # For each course_instance, create exactly one period row.
@@ -279,27 +283,44 @@ with open(FILENAME, "w") as f:
     # ---------------------------------------------------------
     f.write("\n-- Activity Allocations\n")
 
-    # activity_allocation(activity_allocation_id IDENTITY,
-    #                     employee_id, teaching_activity_id, course_instance_id, study_period_id)
-    # FK (teaching_activity_id, course_instance_id, study_period_id) -> planned_activity
+    # Track teacher workload: {(emp_id, sp_id): {course_instance_id, ...}}
+    teacher_workload = {}
 
     for pa in planned_activities:
         ta_id = pa["ta_id"]
         sp_id = pa["sp_id"]
         ci_id = pa["ci_id"]
 
-        # Randomly decide how many teachers to allocate (1-3 teachers per course)
-        # ~30% chance of 2 teachers, ~10% chance of 3 teachers
-        num_teachers = random.choices([1, 2, 3, 4, 5, 6], weights=[5, 20, 30, 20, 15, 10])[0]
-        
-        # Select distinct employees for this course instance
-        allocated_employees = random.sample(range(1, NUM_PEOPLE + 1), num_teachers)
-        
-        for emp_id in allocated_employees:
-            f.write(
-                "INSERT INTO activity_allocation (employee_id, teaching_activity_id, course_instance_id, study_period_id) "
-                f"VALUES ({emp_id}, {ta_id}, {ci_id}, {sp_id});\n"
-            )
+        # For each planned activity, try to assign 1 or 2 teachers
+        num_teachers_to_assign = random.randint(1, 2)
+
+        # Find eligible teachers who have not exceeded their course limit for this period
+        all_possible_emp_ids = list(range(1, NUM_PEOPLE + 1))
+        random.shuffle(all_possible_emp_ids)
+
+        assigned_teachers_count = 0
+        for emp_id in all_possible_emp_ids:
+            # Get the set of courses this teacher is already assigned to in this period
+            courses_in_period = teacher_workload.get((emp_id, sp_id), set())
+
+            # A teacher is eligible if they are assigned to fewer than 4 courses in this period,
+            # OR if the current course is one they are already assigned to (prevents double-counting).
+            if len(courses_in_period) < 4 or ci_id in courses_in_period:
+                # Assign this teacher
+                f.write(
+                    "INSERT INTO activity_allocation (employee_id, teaching_activity_id, course_instance_id, study_period_id) "
+                    f"VALUES ({emp_id}, {ta_id}, {ci_id}, {sp_id});\n"
+                )
+
+                # Update their workload
+                teacher_workload.setdefault((emp_id, sp_id), set()).add(ci_id)
+
+                assigned_teachers_count += 1
+                if assigned_teachers_count >= num_teachers_to_assign:
+                    break  # Found enough teachers for this activity
+
+        if assigned_teachers_count < num_teachers_to_assign:
+            print(f"WARNING: Could only assign {assigned_teachers_count} out of {num_teachers_to_assign} teachers for activity on course instance {ci_id} due to workload limits.")
 
     # ---------------------------------------------------------
     # 8. SET DEPARTMENT MANAGERS (AFTER EMPLOYEES EXIST)

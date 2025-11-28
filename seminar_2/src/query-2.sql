@@ -80,9 +80,12 @@ JOIN
     job_title jt ON e.job_title_id = jt.job_title_id
 JOIN
     teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+WHERE
+    ci.study_year = :year_filter
 GROUP BY
     cl.course_code,
     ci.course_instance_id,
+    ci.study_year,
     cl.HP,
     "Teacher's name",
     jt.job_title;

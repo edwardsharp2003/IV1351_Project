@@ -72,7 +72,7 @@ JOIN
 JOIN
     teaching_activity ON planned_activity.teaching_activity_id = teaching_activity.teaching_activity_id
 WHERE
-    course_instance.study_year = '2024' -- Assuming '2024' is the current year
+    course_instance.study_year = '2025' -- Assuming '2025' is the current year
 GROUP BY
     course_layout.course_code,
     course_instance.course_instance_id,
