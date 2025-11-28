@@ -284,15 +284,22 @@ with open(FILENAME, "w") as f:
     # FK (teaching_activity_id, course_instance_id, study_period_id) -> planned_activity
 
     for pa in planned_activities:
-        emp_id = random.randint(1, NUM_PEOPLE)
         ta_id = pa["ta_id"]
         sp_id = pa["sp_id"]
         ci_id = pa["ci_id"]
 
-        f.write(
-            "INSERT INTO activity_allocation (employee_id, teaching_activity_id, course_instance_id, study_period_id) "
-            f"VALUES ({emp_id}, {ta_id}, {ci_id}, {sp_id});\n"
-        )
+        # Randomly decide how many teachers to allocate (1-3 teachers per course)
+        # ~30% chance of 2 teachers, ~10% chance of 3 teachers
+        num_teachers = random.choices([1, 2, 3], weights=[60, 30, 10])[0]
+        
+        # Select distinct employees for this course instance
+        allocated_employees = random.sample(range(1, NUM_PEOPLE + 1), num_teachers)
+        
+        for emp_id in allocated_employees:
+            f.write(
+                "INSERT INTO activity_allocation (employee_id, teaching_activity_id, course_instance_id, study_period_id) "
+                f"VALUES ({emp_id}, {ta_id}, {ci_id}, {sp_id});\n"
+            )
 
     # ---------------------------------------------------------
     # 8. SET DEPARTMENT MANAGERS (AFTER EMPLOYEES EXIST)
