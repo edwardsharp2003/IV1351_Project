@@ -18,25 +18,25 @@ SELECT
     COALESCE(SUM(CASE
         WHEN ta.activity_name = 'Lecture'
             THEN pa.planned_hours * ta.factor
-        ELSE 0 END), 0) AS lecture_hours,
+        ELSE 0 END), 0) AS "Lecture Hours",
     COALESCE(SUM(CASE
         WHEN ta.activity_name = 'Tutorial'
             THEN pa.planned_hours * ta.factor
-        ELSE 0 END), 0) AS tutorial_hours,
+        ELSE 0 END), 0) AS "Tutorial Hours",
     COALESCE(SUM(CASE
         WHEN ta.activity_name = 'Lab'
             THEN pa.planned_hours * ta.factor
-        ELSE 0 END), 0) AS lab_hours,
+        ELSE 0 END), 0) AS "Lab Hours",
     COALESCE(SUM(CASE
         WHEN ta.activity_name = 'Seminar'
             THEN pa.planned_hours * ta.factor
-        ELSE 0 END), 0) AS seminar_hours,
+        ELSE 0 END), 0) AS "Seminar Hours",
     COALESCE(SUM(CASE
         WHEN ta.activity_name NOT IN ('Lecture', 'Tutorial', 'Lab', 'Seminar')
             THEN pa.planned_hours * ta.factor
-        ELSE 0 END), 0) AS other_overhead_hours,
-    (2 * cl.hp + 28 + 0.2 * ci.num_students) AS admin_hours,
-    (32 + 0.725 * ci.num_students) AS exam_hours,
+        ELSE 0 END), 0) AS "Other Overhead Hours",
+    (2 * cl.hp + 28 + 0.2 * ci.num_students) AS "Admin Hours",
+    (32 + 0.725 * ci.num_students) AS "Exam Hours",
     --- Total hours calculation
     (
     COALESCE(SUM(CASE
@@ -61,7 +61,7 @@ SELECT
         ELSE 0 END), 0) +
     (2 * cl.hp + 28 + 0.2 * ci.num_students) +
     (32 + 0.725 * ci.num_students)
-    ) AS total_hours
+    ) AS "Total Hours"
 FROM
     activity_allocation aa
 JOIN
@@ -89,4 +89,7 @@ GROUP BY
     cl.HP,
     "Teacher's name",
     jt.job_title;
+
+-- SELECT * FROM planned_hours_per_teacher;
+-- psql -d iv1351t2 -v year_filter="'2025'" -f seminar_2/src/query-2.sql
 
