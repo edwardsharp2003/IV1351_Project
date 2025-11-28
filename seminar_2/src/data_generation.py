@@ -290,7 +290,7 @@ with open(FILENAME, "w") as f:
 
         # Randomly decide how many teachers to allocate (1-3 teachers per course)
         # ~30% chance of 2 teachers, ~10% chance of 3 teachers
-        num_teachers = random.choices([1, 2, 3], weights=[60, 30, 10])[0]
+        num_teachers = random.choices([1, 2, 3, 4, 5, 6], weights=[5, 20, 30, 20, 15, 10])[0]
         
         # Select distinct employees for this course instance
         allocated_employees = random.sample(range(1, NUM_PEOPLE + 1), num_teachers)

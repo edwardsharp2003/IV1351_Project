@@ -13,7 +13,55 @@ SELECT
     ci.course_instance_id AS "Course Instance ID",
     cl.HP AS "HP",
     p.first_name || ' ' || p.last_name AS "Teacher's name",
-    jt.job_title AS "Designation"
+    jt.job_title AS "Designation",
+    --- Hours per teaching activity
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Lecture'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) AS lecture_hours,
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Tutorial'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) AS tutorial_hours,
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Lab'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) AS lab_hours,
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Seminar'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) AS seminar_hours,
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name NOT IN ('Lecture', 'Tutorial', 'Lab', 'Seminar')
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) AS other_overhead_hours,
+    (2 * cl.hp + 28 + 0.2 * ci.num_students) AS admin_hours,
+    (32 + 0.725 * ci.num_students) AS exam_hours,
+    --- Total hours calculation
+    (
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Lecture'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) +
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Tutorial'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) +
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Lab'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) +
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name = 'Seminar'
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) +
+    COALESCE(SUM(CASE
+        WHEN ta.activity_name NOT IN ('Lecture', 'Tutorial', 'Lab', 'Seminar')
+            THEN pa.planned_hours * ta.factor
+        ELSE 0 END), 0) +
+    (2 * cl.hp + 28 + 0.2 * ci.num_students) +
+    (32 + 0.725 * ci.num_students)
+    ) AS total_hours
 FROM
     activity_allocation aa
 JOIN
@@ -30,9 +78,12 @@ JOIN
     person p ON e.person_id = p.person_id
 JOIN
     job_title jt ON e.job_title_id = jt.job_title_id
-WHERE
-    cl.course_code = 'DD2350';
+JOIN
+    teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+GROUP BY
+    cl.course_code,
+    ci.course_instance_id,
+    cl.HP,
+    "Teacher's name",
+    jt.job_title;
 
-/*
-SELECT * FROM planned_hours_per_teacher;
-*/

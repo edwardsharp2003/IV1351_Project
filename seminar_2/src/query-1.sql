@@ -83,4 +83,4 @@ ORDER BY
     course_instance.course_instance_id;
 
 -- To run this query:
--- SELECT * FROM planned_hours_per_course;
+SELECT * FROM planned_hours_per_course;
