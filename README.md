@@ -53,3 +53,31 @@ find . -type f -name "*.sh" -exec chmod 755 {} \;
 Alternatively `chmod +x filename.sh` to give permission to one script at a time.
 
 Then you can run them by simply `./path/to/script/folder/script.sh`
+
+## Task 2
+
+### Manual method
+
+Follow this method to setup the database manually with inserts into the sql cli.
+
+1. Create and connect to the database (Do this in project root directory, IV1351_Project)
+```
+psql postgres
+```
+```
+CREATE DATABASE iv1351t2;
+```
+```
+\c iv1351t2;
+```
+2. Insert appropriate sql scripts
+```
+\i seminar_2/task_submissions/create_db.sql;
+```
+```
+\i seminar_2/task_submissions/insert_data.sql;
+```
+3. Run queries, for example:
+```
+\i seminar_2/task_submissions/query-4.sql;
+```
