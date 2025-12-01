@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW teacher_course_allocation AS
+CREATE OR REPLACE VIEW more_than_n_allocated AS
 SELECT
     employee.employee_id AS "Employee ID",
     person.first_name || ' ' || person.last_name AS "Teacher's Name",
@@ -10,13 +10,15 @@ JOIN
     person ON person.person_id = employee.person_id
 JOIN
     activity_allocation ON activity_allocation.employee_id = employee.employee_id
+WHERE
+    activity_allocation.study_period_id = EXTRACT(QUARTER FROM CURRENT_DATE)
 GROUP BY
     "Employee ID",
     "Teacher's Name",
-    "Period";
+    "Period"
+HAVING
+    COUNT(DISTINCT activity_allocation.course_instance_id) > 2 -- change to view at other course count
+ORDER BY
+    "Course Count" DESC;
 
-SELECT * FROM teacher_course_allocation WHERE "Period" = 3;
-
-/*
-EXPLAIN ANALYZE SELECT "Employee ID", "Teacher's Name", "Period", "Course Count" FROM teacher_course_allocation WHERE "Period" = 3 AND "Course Count" > 4;
- */
+SELECT * FROM more_than_n_allocated;
