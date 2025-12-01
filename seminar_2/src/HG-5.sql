@@ -11,7 +11,7 @@ JOIN
 JOIN
     activity_allocation ON activity_allocation.employee_id = employee.employee_id
 WHERE
-    activity_allocation.study_period_id = CAST(EXTRACT(QUARTER FROM CURRENT_DATE) AS INTEGER)
+    activity_allocation.study_period_id = EXTRACT(QUARTER FROM CURRENT_DATE)
 GROUP BY
     "Employee ID",
     "Teacher's Name",
