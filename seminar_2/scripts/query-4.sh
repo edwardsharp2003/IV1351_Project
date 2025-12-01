@@ -37,5 +37,5 @@ echo ""
 echo "Fetching results for period $study_period_id..."
 
 psql -d "$DB_NAME" -v period_id="$study_period_id" <<EOF
-SELECT * FROM teacher_course_allocation WHERE study_period_id = :period_id ORDER BY teacher_name;
+SELECT * FROM teacher_course_allocation WHERE "Period" = :period_id ORDER BY "Teacher's Name";
 EOF

@@ -9,10 +9,10 @@ employee_id | teachers_name | period | number of courses
 
 CREATE OR REPLACE VIEW teacher_course_allocation AS
 SELECT
-    employee.employee_id,
-    person.first_name || ' ' || person.last_name AS teacher_name,
-    activity_allocation.study_period_id,
-    COUNT(DISTINCT activity_allocation.course_instance_id) AS course_count
+    employee.employee_id AS "Employee ID",
+    person.first_name || ' ' || person.last_name AS "Teacher's Name",
+    activity_allocation.study_period_id AS "Period",
+    COUNT(DISTINCT activity_allocation.course_instance_id) AS "Course Count"
 FROM
     employee
 JOIN
@@ -20,11 +20,15 @@ JOIN
 JOIN
     activity_allocation ON activity_allocation.employee_id = employee.employee_id
 GROUP BY
-    employee.employee_id,
-    teacher_name,
-    activity_allocation.study_period_id;
+    "Employee ID",
+    "Teacher's Name",
+    "Period";
 
 /*
 to see view:
-SELECT * FROM teacher_course_allocation WHERE study_period_id = 3;
+SELECT * FROM teacher_course_allocation WHERE "Period" = 3;
 */
+
+/*
+EXPLAIN ANALYZE SELECT "Employee ID", "Teacher's Name", "Period", "Course Count" FROM teacher_course_allocation WHERE "Period" = 3 AND "Course Count" > 4;
+ */
