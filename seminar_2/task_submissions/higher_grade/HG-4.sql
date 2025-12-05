@@ -1,7 +1,7 @@
 CREATE OR REPLACE VIEW hours_variance_report AS
 WITH
 -- Step 1: For every planned activity, calculate its hours and determine if it has been allocated.
--- We use a LEFT JOIN from planned_activity to activity_allocation. If a match is found, the activity is considered "allocated".
+-- We use a LEFT JOIN from planned_activity to activity_allocation. If a match is found, the activity is considered allocated.
 HoursBreakdown AS (
     SELECT
         pa.course_instance_id,
