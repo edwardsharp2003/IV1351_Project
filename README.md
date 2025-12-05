@@ -81,3 +81,14 @@ CREATE DATABASE iv1351t2;
 ```
 \i seminar_2/task_submissions/query-4.sql;
 ```
+
+## Task 3
+
+Activate venv, go to project root for task 3
+```
+cd IV1351_Project/seminar_3/task_submission
+```
+Download requirements
+```
+pip install -r requirements.txt
+```
