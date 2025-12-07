@@ -88,3 +88,9 @@ tmp/
 
 *.asta.lock
 seminar_1/task1/task1.asta.lock
+
+.env
+venv/
+pycache/
+*.pyc
+seminar_3/task_submission/env.
