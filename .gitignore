@@ -94,3 +94,4 @@ venv/
 pycache/
 *.pyc
 seminar_3/task_submission/env.
+GEMINI.md
