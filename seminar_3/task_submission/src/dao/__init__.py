@@ -1,2 +1,2 @@
-# Export the main DAO instance for clean import in the Controller
-from .teaching_dao import teaching_dao
+# Expose the SchoolDAO class directly from the 'dao' package for cleaner imports.
+from .dao import SchoolDAO
