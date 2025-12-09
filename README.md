@@ -85,13 +85,20 @@ CREATE DATABASE iv1351t2;
 
 ## Task 3
 
-Make a copy of [env.example.](seminar_3/task_submission/env.example), name it "env." and fill with your specific information
+Make a copy of [env.example.](seminar_3/task_submission/env.example), name it ".env" (dotenv) and fill with your specific information
 
 Activate venv, go to project root for task 3
 ```
-cd IV1351_Project/seminar_3/task_submission
+(venv) $ cd IV1351_Project/seminar_3/task_submission
 ```
 Download requirements
 ```
-pip install -r requirements.txt
+(venv) $ pip install -r requirements.txt
+```
+Create DB from files in [db_scripts](seminar_3/task_submission/db_scripts)
+```
+postgres=# CREATE DATABASE iv1351t3;
+\c iv1351t3;
+i seminar_3/task_submission/db_scripts/create_db.sql; # path depends on where you started psql terminal
+\i seminar_3/task_submission/db_scripts/insert_data.sql;
 ```
