@@ -1,7 +1,8 @@
 import psycopg
 from psycopg.rows import dict_row # To fetch rows as dictionaries
 from typing import List, Tuple, Optional
-from ..model import (
+from decimal import Decimal
+from src.model import (
     CourseInstance, PlannedActivity, ActivityAllocation, Employee, SalaryHistory,
     CourseLayout, StudyPeriodType, Person, JobTitle
 )
@@ -20,6 +21,15 @@ class SchoolDAO:
         """
         self.conn = db_connection
 
+    def get_all_teacher_salaries(self) -> List[Decimal]:
+        """
+        Fetches the current salary for all employees to be used in an
+        average salary calculation.
+        """
+        with self.conn.cursor(row_factory=dict_row) as cursor:
+            cursor.execute("SELECT salary_amount FROM salary_history;")
+            return [row['salary_amount'] for row in cursor.fetchall()]
+
     def get_data_for_course_cost_calculation(
         self, course_code: str, study_year: str
     ) -> Optional[Tuple[CourseLayout, CourseInstance, List[PlannedActivity], List[Tuple[ActivityAllocation, Employee, SalaryHistory, Person, JobTitle, StudyPeriodType]]]]:
@@ -35,9 +45,7 @@ class SchoolDAO:
                  Returns None if the course instance is not found.
         """
 
-        # Ensure autocommit is off and manage transaction manually
-        self.conn.autocommit = False
-
+        # The connection's autocommit mode is now managed in main.py.
         try:
             with self.conn.cursor(row_factory=dict_row) as cursor:
                 # 1. Find the specific course_layout and course_instance
