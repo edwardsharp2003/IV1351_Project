@@ -61,7 +61,7 @@ with open(FILENAME, "w") as f:
         f.write(f"INSERT INTO skill (skill_name) VALUES ('{skill}');\n")
 
     # Teaching Activities
-    teaching_activities = [("Lecture", 2.0), ("Lab", 1.7), ("Seminar", 1.5), ("Project", 0.5)]
+    teaching_activities = [("Lecture", 2.0), ("Lab", 1.7), ("Seminar", 1.5), ("Project", 0.5), ("Tutorial Hours", 1)]
     f.write("\n-- Teaching Activities\n")
     for name, factor in teaching_activities:
         f.write(

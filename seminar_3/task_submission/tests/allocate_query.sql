@@ -1,0 +1,1 @@
+INSERT INTO planned_activity(teaching_activity_id, course_instance_id, stuty_period_id, planned_hours)

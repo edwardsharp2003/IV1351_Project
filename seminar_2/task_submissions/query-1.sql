@@ -11,7 +11,7 @@ SELECT
             THEN planned_activity.planned_hours * teaching_activity.factor
         ELSE 0 END), 0) AS lecture_hours,
     COALESCE(SUM(CASE
-        WHEN teaching_activity.activity_name = 'Tutorial'
+        WHEN teaching_activity.activity_name = 'Tutorial Hours'
             THEN planned_activity.planned_hours * teaching_activity.factor
         ELSE 0 END), 0) AS tutorial_hours,
     COALESCE(SUM(CASE
