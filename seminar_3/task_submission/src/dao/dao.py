@@ -177,3 +177,53 @@ class SchoolDAO:
             self.conn.rollback()
             print(f"An unexpected error occurred: {e}") # Log other errors
             raise # Re-raise the exception after logging and rollback
+
+    def update_student_count(self, course_code: str, study_year: str, student_change: int) -> bool:
+        """
+        Updates the number of students for a specific course instance.
+        student_change: The number of students to add (can be negative)
+        return True if the update was successful, False otherwise.
+        """
+        try:
+            with self.conn.cursor() as cursor:
+                # First, find the course_instance_id from the course_code and study_year.
+                # We lock the row for the update.
+                cursor.execute(
+                    """
+                    SELECT ci.course_instance_id FROM course_instance ci
+                    JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
+                    WHERE cl.course_code = %s AND ci.study_year = %s
+                    FOR UPDATE;
+                    """,
+                    (course_code, study_year)
+                )
+                instance = cursor.fetchone()
+
+                if not instance:
+                    self.conn.rollback()
+                    return False # Course instance not found
+
+                course_instance_id = instance[0]
+
+                # Now, perform the update
+                cursor.execute(
+                    """
+                    UPDATE course_instance
+                    SET num_students = num_students + %s
+                    WHERE course_instance_id = %s;
+                    """,
+                    (student_change, course_instance_id)
+                )
+                
+                # Check if any row was actually updated
+                if cursor.rowcount == 0:
+                    self.conn.rollback()
+                    return False
+
+            self.conn.commit()
+            return True
+
+        except psycopg.Error as e:
+            self.conn.rollback()
+            print(f"Database error in update_student_count: {e}")
+            raise
