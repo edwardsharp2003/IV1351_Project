@@ -76,9 +76,6 @@ class Cli:
             print(f"An error occurred while computing teaching cost: {e}")
 
     def _modify_student_count_ui(self):
-        """
-        Handles user interaction for modifying the student count of a course instance.
-        """
         print("\n--- Modify Student Count ---")
         course_code = input("Enter Course Code (e.g., IV1351): ").strip().upper()
         study_year = input("Enter Study Year (e.g., 2025): ").strip()
@@ -98,8 +95,6 @@ class Cli:
             success = self.controller.update_student_count(course_code, study_year, student_change)
             if success:
                 print(f"Successfully updated student count for {course_code} ({study_year}) by {student_change}.")
-                # As requested, compute and display costs again to see the effect
-                self._compute_teaching_cost_ui(course_code, study_year)
             else:
                 print(f"Failed to update student count for {course_code} ({study_year}). Course instance might not exist.")
         except Exception as e:
