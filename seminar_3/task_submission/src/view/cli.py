@@ -117,8 +117,9 @@ class Cli:
         
         
         while True:
-            self._display_menu()
-            choice = input("Enter your choice: ").strip()
+            # Note: Calling _display_menu() here might be confusing as it shows the main menu options
+            # but we are in a sub-menu. I'll just prompt for choice.
+            choice = input("Enter your choice (1, 2, or exit): ").strip()
 
             if choice == '1':
                 self._allocate()
@@ -130,9 +131,49 @@ class Cli:
             else:
                 print("Invalid choice. Please try again.")
                 
-        
     def _allocate(self):
-        print("funtion")
+        print("\n--- Allocate Teaching Hours ---")
         
+        course_code = input("Enter Course Code (e.g., IV1351): ").strip().upper()
+        study_year = input("Enter Study Year (e.g., 2025): ").strip()
+        
+        if not course_code or not study_year:
+            print("Course Code and Study Year cannot be empty.")
+            return
+
+        try:
+            study_period_id = int(input("Enter Study Period ID (1-4): ").strip())
+            employee_id = int(input("Enter Employee ID: ").strip())
+            
+            print("\nTeaching Activities (Example IDs):")
+            print(" 1. Lecture")
+            print(" 2. Lab")
+            print(" 3. Seminar")
+            print(" 4. Project")
+            
+            teaching_activity_id = int(input("Enter Teaching Activity ID: ").strip())
+            planned_hours = int(input("Enter Planned Hours: ").strip())
+            
+            print(f"\nAttempting to allocate {planned_hours} hours for Employee {employee_id}...")
+            
+            success = self.controller.allocate_hours(
+                course_code, 
+                study_period_id, 
+                teaching_activity_id, 
+                planned_hours, 
+                employee_id, 
+                study_year
+            )
+            
+            if success:
+                print("Allocation successful!")
+            else:
+                print("Allocation failed. Please check inputs or database logs.")
+                
+        except ValueError:
+            print("Invalid input. Please enter numeric values for IDs and hours.")
+        except Exception as e:
+            print(f"An error occurred during allocation: {e}")
+    
     def _deallocate(self):
         print("funtion")

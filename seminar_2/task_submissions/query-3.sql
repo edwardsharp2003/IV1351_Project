@@ -11,7 +11,7 @@ SELECT
             THEN pa.planned_hours * ta.factor
         END), 0) AS "Lecture Hours",
     COALESCE(SUM(CASE
-        WHEN ta.activity_name = 'Tutorial'
+        WHEN ta.activity_name = 'Tutorial Hours'
             THEN pa.planned_hours * ta.factor
         END), 0) AS "Tutorial Hours",
     COALESCE(SUM(CASE
@@ -54,7 +54,7 @@ JOIN
 JOIN
     teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
 WHERE
-    CAST(ci.study_year AS INTEGER) = EXTRACT(YEAR FROM CURRENT_DATE) AND e.employee_id = 1 -- change ID to view other teacher
+    CAST(ci.study_year AS INTEGER) = EXTRACT(YEAR FROM CURRENT_DATE) AND e.employee_id = 10 -- change ID to view other teacher
 GROUP BY
     cl.course_code,
     ci.course_instance_id,

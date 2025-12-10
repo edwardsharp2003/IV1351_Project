@@ -104,3 +104,12 @@ class Controller:
             print(f"An error occurred in the controller: {e}")
             return False
 
+    def allocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, planned_hours: int, employee_id: int, study_year: str) -> bool:
+        """
+        Allocates teaching hours for an employee on a specific course instance and activity.
+        """
+        try:
+            return self.dao.allocate_hours(course_code, study_period_id, teaching_activity_id, planned_hours, employee_id, study_year)
+        except Exception as e:
+            print(f"An error occurred in the controller during allocation: {e}")
+            return False

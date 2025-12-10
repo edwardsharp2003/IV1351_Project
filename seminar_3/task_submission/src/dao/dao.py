@@ -228,3 +228,59 @@ class SchoolDAO:
             self.conn.rollback()
             print(f"Database error in update_student_count: {e}")
             raise
+        
+    def allocate_hours(self, course_code: str, study_period_id: int,  teaching_activity_id: int,  planned_hours: int, employee_id: int, study_year: str):
+        print("in progress")
+        
+        
+        try:
+            with self.conn.cursor() as cursor:
+                # First, find the course_instance_id from the course_code and study_year.
+                # We lock the row for the update.
+                cursor.execute(
+                    """
+                    SELECT ci.course_instance_id FROM course_instance ci
+                    JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
+                    WHERE cl.course_code = %s AND ci.study_year = %s
+                    FOR UPDATE;
+                    """,
+                    (course_code, study_year)
+                )
+                instance = cursor.fetchone()
+
+                if not instance:
+                    self.conn.rollback()
+                    return False # Course instance not found
+
+                course_instance_id = instance[0]
+                cursor.execute(
+                    """
+                    INSERT INTO planned_activity(teaching_activity_id, course_instance_id, study_period_id, planned_hours)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (teaching_activity_id, course_instance_id, study_period_id) 
+                    DO UPDATE SET planned_hours = EXCLUDED.planned_hours;
+                    """,
+                    (teaching_activity_id, course_instance_id, study_period_id, planned_hours)
+                )
+                
+                
+                cursor.execute(
+                    """
+                    INSERT INTO activity_allocation(employee_id, teaching_activity_id, course_instance_id, study_period_id)
+                    VALUES (%s, %s, %s, %s);
+                    """,
+                    (employee_id, teaching_activity_id, course_instance_id, study_period_id)
+                )
+            
+            # 4. Commit the transaction
+            self.conn.commit()
+            return True
+
+        except psycopg.Error as e:
+            self.conn.rollback()
+            print(f"Database error in allocate_hours: {e}")
+            return False
+        except Exception as e:
+            self.conn.rollback()
+            print(f"An unexpected error occurred in allocate_hours: {e}")
+            return False
