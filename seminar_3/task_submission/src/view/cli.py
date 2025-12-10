@@ -145,13 +145,16 @@ class Cli:
             study_period_id = int(input("Enter Study Period ID (1-4): ").strip())
             employee_id = int(input("Enter Employee ID: ").strip())
             
-            print("\nTeaching Activities (Example IDs):")
+            print("\nTeaching Activities:")
             print(" 1. Lecture")
             print(" 2. Lab")
             print(" 3. Seminar")
             print(" 4. Project")
+            print(" 5. Tutorial Hours")
+            print(" 6. Other")
             
-            teaching_activity_id = int(input("Enter Teaching Activity ID: ").strip())
+            
+            teaching_activity_id = int(input("Enter Teaching Activity from the list 1-5 (e.g., 2)").strip())
             planned_hours = int(input("Enter Planned Hours: ").strip())
             
             print(f"\nAttempting to allocate {planned_hours} hours for Employee {employee_id}...")
@@ -176,4 +179,36 @@ class Cli:
             print(f"An error occurred during allocation: {e}")
     
     def _deallocate(self):
-        print("funtion")
+        print("\n--- Deallocate Teaching Hours ---")
+        
+        course_code = input("Enter Course Code (e.g., IV1351): ").strip().upper()
+        study_year = input("Enter Study Year (e.g., 2025): ").strip()
+        
+        if not course_code or not study_year:
+            print("Course Code and Study Year cannot be empty.")
+            return
+
+        try:
+            study_period_id = int(input("Enter Study Period ID (1-4): ").strip())
+            employee_id = int(input("Enter Employee ID: ").strip())
+            teaching_activity_id = int(input("Enter Teaching Activity type ").strip())
+            
+            print(f"\nAttempting to deallocate Employee {employee_id} from activity {teaching_activity_id}...")
+            
+            success = self.controller.deallocate_hours(
+                course_code, 
+                study_period_id, 
+                teaching_activity_id, 
+                employee_id, 
+                study_year
+            )
+            
+            if success:
+                print("Deallocation successful!")
+            else:
+                print("Deallocation failed. Allocation might not exist.")
+                
+        except ValueError:
+            print("Invalid input. Please enter numeric values for IDs.")
+        except Exception as e:
+            print(f"An error occurred during deallocation: {e}")

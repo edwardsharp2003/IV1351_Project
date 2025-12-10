@@ -230,7 +230,7 @@ class SchoolDAO:
             raise
         
     def allocate_hours(self, course_code: str, study_period_id: int,  teaching_activity_id: int,  planned_hours: int, employee_id: int, study_year: str):
-        print("in progress")
+        #print("in progress")
         
         
         try:
@@ -283,4 +283,57 @@ class SchoolDAO:
         except Exception as e:
             self.conn.rollback()
             print(f"An unexpected error occurred in allocate_hours: {e}")
+            return False
+
+    def deallocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, employee_id: int, study_year: str) -> bool:
+        """
+        Removes a specific teaching allocation for an employee.
+        """
+        try:
+            with self.conn.cursor() as cursor:
+                # 1. Find the course_instance_id
+                cursor.execute(
+                    """
+                    SELECT ci.course_instance_id FROM course_instance ci
+                    JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
+                    WHERE cl.course_code = %s AND ci.study_year = %s
+                    FOR UPDATE;
+                    """,
+                    (course_code, study_year)
+                )
+                instance = cursor.fetchone()
+
+                if not instance:
+                    self.conn.rollback()
+                    return False # Course instance not found
+
+                course_instance_id = instance[0]
+
+                # 2. Delete the allocation
+                cursor.execute(
+                    """
+                    DELETE FROM activity_allocation
+                    WHERE employee_id = %s 
+                      AND teaching_activity_id = %s 
+                      AND course_instance_id = %s 
+                      AND study_period_id = %s;
+                    """,
+                    (employee_id, teaching_activity_id, course_instance_id, study_period_id)
+                )
+                
+                if cursor.rowcount == 0:
+                    self.conn.rollback()
+                    print("No matching allocation found to delete.")
+                    return False
+
+            self.conn.commit()
+            return True
+
+        except psycopg.Error as e:
+            self.conn.rollback()
+            print(f"Database error in deallocate_hours: {e}")
+            return False
+        except Exception as e:
+            self.conn.rollback()
+            print(f"An unexpected error occurred in deallocate_hours: {e}")
             return False

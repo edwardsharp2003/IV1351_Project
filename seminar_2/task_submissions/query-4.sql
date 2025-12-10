@@ -17,7 +17,7 @@ GROUP BY
     "Teacher's Name",
     "Period"
 HAVING
-    COUNT(DISTINCT activity_allocation.course_instance_id) > 2 -- change to view at other course count
+    COUNT(DISTINCT activity_allocation.course_instance_id) > 0 -- change to view at other course count
 ORDER BY
     "Course Count" DESC;
 
