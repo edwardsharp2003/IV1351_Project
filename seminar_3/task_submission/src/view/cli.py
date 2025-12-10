@@ -26,6 +26,8 @@ class Cli:
                 self._compute_teaching_cost_ui()
             elif choice == '2':
                 self._modify_student_count_ui()
+            if choice =='3':
+                self._allocate_dealocate_teaching_hours()
             elif choice == 'exit':
                 print("Exiting application. Goodbye!")
                 break
@@ -99,3 +101,8 @@ class Cli:
                 print(f"Failed to update student count for {course_code} ({study_year}). Course instance might not exist.")
         except Exception as e:
             print(f"An error occurred while modifying student count: {e}")
+            
+    def _allocate_dealocate_teaching_hours(self):
+        """
+        Handles the user interaction for computing teaching cost.
+        """

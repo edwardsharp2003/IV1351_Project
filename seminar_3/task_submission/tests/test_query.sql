@@ -5,4 +5,4 @@ UPDATE course_instance
 SET num_students = num_students + 100
 WHERE course_instance_id = 501;
 
-UPDATE course_instance SET num_students = num_students - 100 WHERE course_instance_id = 501;
+--UPDATE course_instance SET num_students = num_students - 100 WHERE course_instance_id = 501;
