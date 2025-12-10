@@ -76,3 +76,20 @@ class Controller:
         )
 
         return result_dto
+
+    def update_student_count(self, course_code: str, study_year: str, student_change: int) -> bool:
+        """
+        Passes the request to update student count to the DAO.
+
+        :param course_code: The code of the course.
+        :param study_year: The year of the course instance.
+        :param student_change: The number of students to add (can be negative).
+        :return: True if successful, False otherwise.
+        """
+        try:
+            return self.dao.update_student_count(course_code, study_year, student_change)
+        except Exception as e:
+            # In a real application, you might have more specific error handling here
+            print(f"An error occurred in the controller: {e}")
+            return False
+
