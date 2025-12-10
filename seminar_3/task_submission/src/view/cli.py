@@ -41,6 +41,7 @@ class Cli:
         print("\n--- Teaching Allocation System ---")
         print("1. Compute Teaching Cost for a Course Instance")
         print("2. Modify Student Count for a Course Instance")
+        print("3. Allocate and deallocate teaching loads:")
         print("Type 'exit' to quit.")
         print("----------------------------------")
 
@@ -100,9 +101,37 @@ class Cli:
             else:
                 print(f"Failed to update student count for {course_code} ({study_year}). Course instance might not exist.")
         except Exception as e:
-            print(f"An error occurred while modifying student count: {e}")
+            print(f"An error occurred while modifying student count: {e}")  
             
     def _allocate_dealocate_teaching_hours(self):
         """
         Handles the user interaction for computing teaching cost.
         """
+        print("\n--- Choose between allocating of deallocating Teachers to a course_instance")
+        print("\n 1. For allocating")
+        print("\n 2. For deallocating")
+        print("Type 'exit' to go to main menu.")
+        print("----------------------------------")
+        
+        
+        
+        while True:
+            self._display_menu()
+            choice = input("Enter your choice: ").strip()
+
+            if choice == '1':
+                self._allocate()
+            elif choice == '2':
+                self._deallocate()
+            elif choice == 'exit':
+                print("Exiting application. Goodbye!")
+                break
+            else:
+                print("Invalid choice. Please try again.")
+                
+        
+    def _allocate(self):
+        print("funtion")
+        
+    def _deallocate(self):
+        print("funtion")
