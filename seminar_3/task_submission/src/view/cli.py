@@ -1,4 +1,4 @@
-from src.model import CourseTeachingCost # Assuming CourseTeachingCost is the primary output DTO
+from src.model import CourseTeachingCost
 from src.controller import Controller
 from typing import Optional
 
@@ -24,6 +24,8 @@ class Cli:
 
             if choice == '1':
                 self._compute_teaching_cost_ui()
+            elif choice == '2':
+                self._modify_student_count_ui()
             elif choice == 'exit':
                 print("Exiting application. Goodbye!")
                 break
@@ -36,16 +38,22 @@ class Cli:
         """
         print("\n--- Teaching Allocation System ---")
         print("1. Compute Teaching Cost for a Course Instance")
+        print("2. Modify Student Count for a Course Instance")
         print("Type 'exit' to quit.")
         print("----------------------------------")
 
-    def _compute_teaching_cost_ui(self):
+    def _compute_teaching_cost_ui(self, course_code: str = None, study_year: str = None):
         """
         Handles the user interaction for computing teaching cost.
+        Can be called with pre-filled course_code and study_year for post-update display.
         """
-        print("\n--- Compute Teaching Cost ---")
-        course_code = input("Enter Course Code (e.g., IV1351): ").strip().upper()
-        study_year = input("Enter Study Year (e.g., 2025): ").strip()
+        if course_code is None:
+            print("\n--- Compute Teaching Cost ---")
+            course_code = input("Enter Course Code (e.g., IV1351): ").strip().upper()
+            study_year = input("Enter Study Year (e.g., 2025): ").strip()
+        else:
+            print(f"\n--- Re-computing Teaching Cost for Course: {course_code}, Year: {study_year} ---")
+
 
         if not course_code or not study_year:
             print("Course Code and Study Year cannot be empty.")
@@ -58,7 +66,7 @@ class Cli:
 
             if result:
                 print("\n--- Teaching Cost Report ---")
-                print(f"{'Course Code':<15} {'Course Instance':<20} {'Period':<8} {'Planned Cost (KSEK)':<25} {'Actual Cost (KSEK)':<25}")
+                print(f"{'Course Code':<15} {'Course Instance ID':<20} {'Period':<8} {'Planned Cost (KSEK)':<25} {'Actual Cost (KSEK)':<25}")
                 print("-" * 93)
                 print(f"{result.course_code:<15} {result.course_instance_id:<20} {result.period:<8} {result.planned_cost_ksek:<25.2f} {result.actual_cost_ksek:<25.2f}")
                 print("-" * 93)
@@ -66,3 +74,33 @@ class Cli:
                 print(f"No course instance found for Course Code '{course_code}' in Year '{study_year}'.")
         except Exception as e:
             print(f"An error occurred while computing teaching cost: {e}")
+
+    def _modify_student_count_ui(self):
+        """
+        Handles user interaction for modifying the student count of a course instance.
+        """
+        print("\n--- Modify Student Count ---")
+        course_code = input("Enter Course Code (e.g., IV1351): ").strip().upper()
+        study_year = input("Enter Study Year (e.g., 2025): ").strip()
+        
+        try:
+            student_change_str = input("Enter change in students (e.g., 100 to add 100, -50 to remove 50): ").strip()
+            student_change = int(student_change_str)
+        except ValueError:
+            print("Invalid input for student change. Please enter an integer.")
+            return
+
+        if not course_code or not study_year:
+            print("Course Code and Study Year cannot be empty.")
+            return
+
+        try:
+            success = self.controller.update_student_count(course_code, study_year, student_change)
+            if success:
+                print(f"Successfully updated student count for {course_code} ({study_year}) by {student_change}.")
+                # As requested, compute and display costs again to see the effect
+                self._compute_teaching_cost_ui(course_code, study_year)
+            else:
+                print(f"Failed to update student count for {course_code} ({study_year}). Course instance might not exist.")
+        except Exception as e:
+            print(f"An error occurred while modifying student count: {e}")
