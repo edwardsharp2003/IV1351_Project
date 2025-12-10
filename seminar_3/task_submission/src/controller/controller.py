@@ -2,66 +2,77 @@ from decimal import Decimal
 from src.dao import SchoolDAO
 from src.model import CourseTeachingCost
 
-# Define constants for calculation
-HOURS_PER_MONTH = 160
+ASSUMED_HOURLY_COST_SEK = Decimal('300.00')  # an assumed hourly cost for planned cost calculation
+HOURS_PER_MONTH = 160  # used for average teacher salary calculation
+
 
 class Controller:
-    """
-    Handles application logic, orchestrating calls between the view and the DAO.
-    """
+    # Handles application logic, orchestrating calls between the view and the DAO.
     def __init__(self, dao: SchoolDAO):
-        """
-        Initializes the Controller with a data access object.
-        :param dao: An instance of SchoolDAO.
-        """
+        # Initializes the Controller with a dao, an instance of SchoolDAO
         self.dao = dao
 
     def get_course_teaching_cost(self, course_code: str, study_year: str) -> CourseTeachingCost | None:
         """
         Calculates the planned and actual teaching cost for a given course instance.
 
-        :param course_code: The code of the course (e.g., 'IV1351').
-        :param study_year: The year of the course instance (e.g., '2025').
+        :param course_code: e.g. 'IV1351'
+        :param study_year: e.g. '2025'
         :return: A CourseTeachingCost DTO with the calculated costs, or None if the course is not found.
         """
         # 1. Get all the raw data from the DAO
         dao_data = self.dao.get_data_for_course_cost_calculation(course_code, study_year)
 
         if not dao_data:
-            return None # Course instance not found
-        
+            return None  # Course instance not found
+
         course_layout, course_instance, planned_activities, allocations = dao_data
 
         # 2. Apply business logic: Calculate Planned Cost
-        # 2a. Get all teacher salaries from the DAO and compute the average.
-        all_salaries = self.dao.get_all_teacher_salaries()
-        average_monthly_salary = sum(all_salaries) / len(all_salaries) if all_salaries else 0
-        average_hourly_cost = Decimal(average_monthly_salary / HOURS_PER_MONTH)
-
-        # 2b. Use the dynamic average to calculate the planned cost.
         total_planned_hours = sum(pa.planned_hours for pa in planned_activities)
-        planned_cost = total_planned_hours * average_hourly_cost
+        planned_cost = total_planned_hours * ASSUMED_HOURLY_COST_SEK
 
         # 3. Apply business logic: Calculate Actual Cost
-        # For simplicity, we'll sum the monthly salaries of all unique allocated teachers.
-        teacher_salaries = {alloc_tuple[1].id: alloc_tuple[2].salary_amount for alloc_tuple in allocations}
-        total_actual_salary_sum = sum(teacher_salaries.values())
+        total_actual_cost = Decimal('0.00')
+
+        # We need to ensure we don't double count if multiple allocations point to same planned activity,
+        # but the current model suggests one allocation per activity for an employee.
+
+        for alloc_tuple in allocations:
+            allocation, employee, salary_history, person, job_title, study_period = alloc_tuple
+
+            # Get the teacher's individual hourly rate from their monthly salary
+            teacher_monthly_salary = salary_history.salary_amount
+            # Ensure division by zero is handled if HOURS_PER_MONTH is 0 or if salary is huge.
+            teacher_hourly_rate = teacher_monthly_salary / HOURS_PER_MONTH if HOURS_PER_MONTH > 0 else Decimal('0.00')
+
+            # Find the planned hours for the specific activity this allocation refers to
+            # This assumes there's a corresponding PlannedActivity entry for each ActivityAllocation.
+            matching_planned_activity_hours = 0
+            for pa in planned_activities:
+                if pa.teaching_activity_id == allocation.teaching_activity_id and \
+                        pa.course_instance_id == allocation.course_instance_id and \
+                        pa.study_period_id == allocation.study_period_id:
+                    matching_planned_activity_hours = pa.planned_hours
+                    break
+
+            # Add to total actual cost based on their hourly rate and the hours of their allocated activity
+            total_actual_cost += teacher_hourly_rate * matching_planned_activity_hours
 
         # 4. Create and return the final DTO
         # The example output showed cost in KSEK, so we divide by 1000
-        # Determine period from either allocations or planned activities
         period = 0
         if allocations:
-            period = allocations[0][5].id # Accessing study_period_type DTO from the tuple
+            period = allocations[0][5].id  # Accessing study_period_type DTO from the tuple
         elif planned_activities:
-            period = planned_activities[0].study_period_id # Accessing study_period_id from PlannedActivity DTO
+            period = planned_activities[0].study_period_id  # Accessing study_period_id from PlannedActivity DTO
 
         result_dto = CourseTeachingCost(
             course_code=course_layout.course_code,
             course_instance_id=course_instance.id,
             period=period,
             planned_cost_ksek=round(planned_cost / 1000, 2),
-            actual_cost_ksek=round(total_actual_salary_sum / 1000, 2)
+            actual_cost_ksek=round(total_actual_cost / 1000, 2)
         )
-        
+
         return result_dto

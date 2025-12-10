@@ -1,7 +1,6 @@
 import psycopg
 from psycopg.rows import dict_row # To fetch rows as dictionaries
 from typing import List, Tuple, Optional
-from decimal import Decimal
 from src.model import (
     CourseInstance, PlannedActivity, ActivityAllocation, Employee, SalaryHistory,
     CourseLayout, StudyPeriodType, Person, JobTitle
@@ -20,15 +19,6 @@ class SchoolDAO:
         :param db_connection: An active psycopg connection object.
         """
         self.conn = db_connection
-
-    def get_all_teacher_salaries(self) -> List[Decimal]:
-        """
-        Fetches the current salary for all employees to be used in an
-        average salary calculation.
-        """
-        with self.conn.cursor(row_factory=dict_row) as cursor:
-            cursor.execute("SELECT salary_amount FROM salary_history;")
-            return [row['salary_amount'] for row in cursor.fetchall()]
 
     def get_data_for_course_cost_calculation(
         self, course_code: str, study_year: str
