@@ -28,9 +28,22 @@ class Controller:
 
         course_layout, course_instance, planned_activities, allocations = dao_data
 
-        # 2. Apply business logic: Calculate Planned Cost
-        total_planned_hours = sum(pa.planned_hours for pa in planned_activities)
-        planned_cost = total_planned_hours * ASSUMED_HOURLY_COST_SEK
+        # 2. Apply business logic: Calculate Planned Cost using the new detailed formula
+        
+        # 2a. Sum hours from explicitly planned activities (Lectures, Labs, etc.)
+        explicit_planned_hours = sum(pa.planned_hours * pa.factor for pa in planned_activities)
+
+        # 2b. Calculate implicit hours for Admin and Exam based on formulas
+        # Admin hours formula: (2 * hp + 28 + 0.2 * num_students)
+        admin_hours = (2 * course_layout.hp) + 28 + (Decimal('0.2') * course_instance.num_students)
+        
+        # Exam hours formula: (32 + 0.725 * num_students)
+        exam_hours = 32 + (Decimal('0.725') * course_instance.num_students)
+
+        # 2c. Calculate total hours and final planned cost
+        total_hours = explicit_planned_hours + admin_hours + exam_hours
+        planned_cost = total_hours * ASSUMED_HOURLY_COST_SEK
+
 
         # 3. Apply business logic: Calculate Actual Cost
         total_actual_cost = Decimal('0.00')

@@ -97,10 +97,11 @@ class SchoolDAO:
                             teaching_activity_id=row['teaching_activity_id'],
                             course_instance_id=row['course_instance_id'],
                             study_period_id=row['study_period_id'],
-                            planned_hours=row['planned_hours']
+                            planned_hours=row['planned_hours'],
+                            activity_name=row['activity_name'],
+                            factor=row['factor']
                         )
                     )
-                    # We could also return a DTO for TeachingActivity here if needed by controller
 
                 # 3. Get actual allocations and employee details (including salary and person info)
                 # This is a complex join to get all required details for actual cost calculation.

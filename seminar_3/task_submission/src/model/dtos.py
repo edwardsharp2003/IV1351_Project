@@ -75,6 +75,8 @@ class PlannedActivity:
     course_instance_id: int
     study_period_id: int
     planned_hours: int
+    activity_name: str
+    factor: Decimal
 
 @dataclass
 class ActivityAllocation:
