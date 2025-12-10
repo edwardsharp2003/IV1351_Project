@@ -13,13 +13,8 @@ class Controller:
         self.dao = dao
 
     def get_course_teaching_cost(self, course_code: str, study_year: str) -> CourseTeachingCost | None:
-        """
-        Calculates the planned and actual teaching cost for a given course instance.
+        # Calculates the planned and actual teaching cost for a given course instance.
 
-        :param course_code: e.g. 'IV1351'
-        :param study_year: e.g. '2025'
-        :return: A CourseTeachingCost DTO with the calculated costs, or None if the course is not found.
-        """
         # 1. Get all the raw data from the DAO
         dao_data = self.dao.get_data_for_course_cost_calculation(course_code, study_year)
 
@@ -28,57 +23,60 @@ class Controller:
 
         course_layout, course_instance, planned_activities, allocations = dao_data
 
-        # 2. Apply business logic: Calculate Planned Cost using the new detailed formula
-        
-        # 2a. Sum hours from explicitly planned activities (Lectures, Labs, etc.)
+        # 2a. Sum hours from explicitly planned activities
         explicit_planned_hours = sum(pa.planned_hours * pa.factor for pa in planned_activities)
-
-        # 2b. Calculate implicit hours for Admin and Exam based on formulas
-        # Admin hours formula: (2 * hp + 28 + 0.2 * num_students)
+        # 2b. Calculate implicit Admin and Exam hours
         admin_hours = (2 * course_layout.hp) + 28 + (Decimal('0.2') * course_instance.num_students)
-        
-        # Exam hours formula: (32 + 0.725 * num_students)
         exam_hours = 32 + (Decimal('0.725') * course_instance.num_students)
-
         # 2c. Calculate total hours and final planned cost
-        total_hours = explicit_planned_hours + admin_hours + exam_hours
-        planned_cost = total_hours * ASSUMED_HOURLY_COST_SEK
+        total_planned_hours = explicit_planned_hours + admin_hours + exam_hours
+        planned_cost = total_planned_hours * ASSUMED_HOURLY_COST_SEK
 
-
-        # 3. Apply business logic: Calculate Actual Cost
+        # 3. Apply business logic: Calculate Actual Cost with Proportional Distribution
         total_actual_cost = Decimal('0.00')
+        teacher_workload = {} # {teacher_id: {'base_hours': Decimal, 'hourly_rate': Decimal}}
+        total_base_hours = Decimal('0.00')
 
-        # We need to ensure we don't double count if multiple allocations point to same planned activity,
-        # but the current model suggests one allocation per activity for an employee.
-
+        # 3a. First pass: Aggregate each teacher's base hours and find their hourly rate
         for alloc_tuple in allocations:
             allocation, employee, salary_history, person, job_title, study_period = alloc_tuple
-
-            # Get the teacher's individual hourly rate from their monthly salary
-            teacher_monthly_salary = salary_history.salary_amount
-            # Ensure division by zero is handled if HOURS_PER_MONTH is 0 or if salary is huge.
-            teacher_hourly_rate = teacher_monthly_salary / HOURS_PER_MONTH if HOURS_PER_MONTH > 0 else Decimal('0.00')
-
-            # Find the planned hours for the specific activity this allocation refers to
-            # This assumes there's a corresponding PlannedActivity entry for each ActivityAllocation.
-            matching_planned_activity_hours = 0
+            
+            # Find the planned hours for this specific allocation
             for pa in planned_activities:
-                if pa.teaching_activity_id == allocation.teaching_activity_id and \
-                        pa.course_instance_id == allocation.course_instance_id and \
-                        pa.study_period_id == allocation.study_period_id:
-                    matching_planned_activity_hours = pa.planned_hours
+                if pa.teaching_activity_id == allocation.teaching_activity_id:
+                    # Initialize teacher if not already in workload
+                    if employee.id not in teacher_workload:
+                        teacher_workload[employee.id] = {
+                            'base_hours': Decimal('0.00'),
+                            'hourly_rate': salary_history.salary_amount / HOURS_PER_MONTH if HOURS_PER_MONTH > 0 else Decimal('0.00')
+                        }
+                    # Add hours (including factor) to this teacher's workload
+                    hours_for_activity = pa.planned_hours * pa.factor
+                    teacher_workload[employee.id]['base_hours'] += hours_for_activity
+                    total_base_hours += hours_for_activity
                     break
-
-            # Add to total actual cost based on their hourly rate and the hours of their allocated activity
-            total_actual_cost += teacher_hourly_rate * matching_planned_activity_hours
+        
+        # 3b. Second pass: Calculate each teacher's share of derived hours and total actual cost
+        total_derived_hours = admin_hours + exam_hours
+        
+        for teacher_id, work in teacher_workload.items():
+            # Cost of their base work
+            base_work_cost = work['base_hours'] * work['hourly_rate']
+            
+            # Their share of the derived work
+            proportion_of_work = (work['base_hours'] / total_base_hours) if total_base_hours > 0 else Decimal('0.00')
+            derived_hours_for_teacher = total_derived_hours * proportion_of_work
+            derived_work_cost = derived_hours_for_teacher * work['hourly_rate']
+            
+            # Total cost for this teacher is their base work + their share of derived work
+            total_actual_cost += base_work_cost + derived_work_cost
 
         # 4. Create and return the final DTO
-        # The example output showed cost in KSEK, so we divide by 1000
         period = 0
         if allocations:
-            period = allocations[0][5].id  # Accessing study_period_type DTO from the tuple
+            period = allocations[0][5].id
         elif planned_activities:
-            period = planned_activities[0].study_period_id  # Accessing study_period_id from PlannedActivity DTO
+            period = planned_activities[0].study_period_id
 
         result_dto = CourseTeachingCost(
             course_code=course_layout.course_code,

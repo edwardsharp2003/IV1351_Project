@@ -26,13 +26,14 @@ class Cli:
                 self._compute_teaching_cost_ui()
             elif choice == '2':
                 self._modify_student_count_ui()
-            if choice =='3':
-                self._allocate_dealocate_teaching_hours()
+            elif choice == '3':
+                self._allocate_deallocate_teaching_hours()
             elif choice == 'exit':
                 print("Exiting application. Goodbye!")
                 break
             else:
-                print("Invalid choice. Please try again.")
+                if choice:
+                    print("Invalid choice. Please try again.")
 
     def _display_menu(self):
         """
@@ -102,7 +103,7 @@ class Cli:
         except Exception as e:
             print(f"An error occurred while modifying student count: {e}")
             
-    def _allocate_dealocate_teaching_hours(self):
+    def _allocate_deallocate_teaching_hours(self):
         """
         Handles the user interaction for computing teaching cost.
         """
