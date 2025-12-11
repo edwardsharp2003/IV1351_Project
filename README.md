@@ -1,10 +1,11 @@
-# IV1351\_Project
+# IV1351 Project
+Instructions for project task 3 further down
 
 ## Scripts
 
 To run the scripts, follow the installation proccess of the required dependencies inside of an venv
 
-### Python configuration
+### Python Configuration
 This is only needed for the script [create_db.sh](seminar_2/scripts/create_db.sh) <br>
 All other scripts can be run without setting up python
 
@@ -16,7 +17,7 @@ sudo apt-get install python3
 # or 
 sudo dnf install python3
 # or 
-sudo pacman -S python
+sudo pacman -S python3
 # or whatever package manager you use
 ```
 
@@ -27,11 +28,11 @@ python3 -m venv venv
 
 3. Run the venv script to start it 
 ```
-# For regular zsh terminal
+# For z-shell/bash 
 source ./venv/bin/activate
-# For the fish terminal 
+# For fish-shell 
 source ./venv/bin/activate.fish
-# maybe for windows?
+# maybe for windows powershell?
 venv/scripts/activate
 ```
 
@@ -84,21 +85,32 @@ CREATE DATABASE iv1351t2;
 
 
 ## Task 3
+Everything needed to replicate our results from task 3 <br>
+You will need python in order to run the app, since everything is done in python. <br>
+Follow [Python Configuration](#python-configuration) in case you dont have any python version installed.
 
-Make a copy of [env.example.](seminar_3/task_submission/env.example), name it ".env" (dotenv) and fill with your specific information
+### 3.1 Create Database
+Create DB from files in [db_scripts](seminar_3/task_submission/db_scripts)
+```
+CREATE DATABASE iv1351t3;
+\c iv1351t3;
+\i seminar_3/task_submission/db_scripts/create_db.sql;
+\i seminar_3/task_submission/db_scripts/insert_data.sql;
+```
+
+### 3.2 Dotfiles and Venv setup
+Make a copy of [env.example.](seminar_3/task_submission/env.example), name it ".env" (dotenv) and fill with your specific information. Most noteworthy, this means changing <br>
+"DB_USER=postgres" to whatever username you use for your database, and <br>
+"DB_PASSWORD=your_postgres_password_here" to contain your database password
 
 Activate venv, go to project root for task 3
 ```
-(venv) $ cd IV1351_Project/seminar_3/task_submission
+cd IV1351_Project/seminar_3/task_submission
 ```
 Download requirements
 ```
-(venv) $ pip install -r requirements.txt
+pip install -r requirements.txt # need to be in same directory as requirements.txt for this, otherwise add path
 ```
-Create DB from files in [db_scripts](seminar_3/task_submission/db_scripts)
-```
-postgres=# CREATE DATABASE iv1351t3;
-\c iv1351t3;
-i seminar_3/task_submission/db_scripts/create_db.sql; # path depends on where you started psql terminal
-\i seminar_3/task_submission/db_scripts/insert_data.sql;
-```
+
+### 3.3 Run it
+
