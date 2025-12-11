@@ -337,3 +337,48 @@ class SchoolDAO:
             self.conn.rollback()
             print(f"An unexpected error occurred in deallocate_hours: {e}")
             return False
+        
+    def create_new_teaching_activity(self, other_teaching_activity: str):
+        """
+        Creates an new teaching activity in the database with the string value given in the CLI.
+        Returns the new teaching_activity_id.
+        """
+        try:
+            with self.conn.cursor() as cursor:
+                # Insert the new activity with a default factor of 1.0
+                cursor.execute(
+                    """
+                    INSERT INTO teaching_activity (activity_name, factor) 
+                    VALUES (%s, 1.0) 
+                    RETURNING teaching_activity_id;
+                    """,
+                    (other_teaching_activity,)
+                )
+                new_id = cursor.fetchone()[0]
+            
+            self.conn.commit()
+            return new_id
+
+        except psycopg.Error as e:
+            self.conn.rollback()
+            print(f"Database error in create_new_teaching_activity: {e}")
+            return None
+        except Exception as e:
+            self.conn.rollback()
+            print(f"An unexpected error occurred: {e}")
+            return None
+
+    def get_all_teaching_activities(self) -> List[dict]:
+        """
+        Fetches all teaching activities from the database.
+        Returns a list of dictionaries representing the rows.
+        """
+        try:
+            with self.conn.cursor(row_factory=dict_row) as cursor:
+                cursor.execute("SELECT * FROM teaching_activity ORDER BY teaching_activity_id;")
+                return cursor.fetchall()
+        except psycopg.Error as e:
+            print(f"Database error in get_all_teaching_activities: {e}")
+            return []
+    
+            

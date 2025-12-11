@@ -153,8 +153,19 @@ class Cli:
             print(" 5. Tutorial Hours")
             print(" 6. Other")
             
+            choice = int(input("Enter Teaching Activity from the list 1-6 (e.g., 2): ").strip())
             
-            teaching_activity_id = int(input("Enter Teaching Activity from the list 1-5 (e.g., 2)").strip())
+            teaching_activity_id = None
+
+            if choice == 6:
+                # Call _other and wait for the new ID
+                teaching_activity_id = self._other()
+                if not teaching_activity_id:
+                    print("Aborting allocation because the new activity could not be created.")
+                    return
+            else:
+                teaching_activity_id = choice
+
             planned_hours = int(input("Enter Planned Hours: ").strip())
             
             print(f"\nAttempting to allocate {planned_hours} hours for Employee {employee_id}...")
@@ -212,3 +223,27 @@ class Cli:
             print("Invalid input. Please enter numeric values for IDs.")
         except Exception as e:
             print(f"An error occurred during deallocation: {e}")
+
+    def _other(self) -> Optional[int]:
+        print("\n --- Choose the name of the Teaching Activity")
+        try:
+            other_teaching_activity = input("Enter the name of the new activity(e.g, Exercise)").strip()
+            
+            # Note: create_new_teaching_activity returns an ID (int) or None
+            new_id = self.controller.create_new_teaching_activity(other_teaching_activity)
+            
+            if new_id: 
+                print(f"New Teaching Activity created successfully with ID: {new_id}")
+                return new_id
+            else: 
+                print("Creation of a new teaching activity failed.")
+                return None
+                
+        except ValueError:
+            print("Invalid input.")
+            return None
+        except Exception as e:
+            print(f"An error occurred during creation: {e}")
+            return None
+
+

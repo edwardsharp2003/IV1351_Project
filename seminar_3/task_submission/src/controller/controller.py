@@ -123,3 +123,23 @@ class Controller:
         except Exception as e:
             print(f"An error occurred in the controller during deallocation: {e}")
             return False
+        
+    def create_new_teaching_activity(self, other_teaching_activity: str):
+        """
+        Creating a new teaching activity
+        """
+        try: 
+            return self.dao.create_new_teaching_activity(other_teaching_activity)
+        except Exception as e:
+            print(f"An error occurred in the controller during deallocation: {e}")
+            return False
+
+    def get_all_teaching_activities(self):
+        """
+        Retrieves all teaching activities.
+        """
+        try:
+            return self.dao.get_all_teaching_activities()
+        except Exception as e:
+            print(f"An error occurred in the controller while fetching activities: {e}")
+            return []

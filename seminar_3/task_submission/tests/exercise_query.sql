@@ -1,0 +1,1 @@
+INSERT INTO teaching_activity(activity_name, factor) VALUES ('Exercise', 1)
