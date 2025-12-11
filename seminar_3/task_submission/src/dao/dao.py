@@ -197,11 +197,11 @@ class SchoolDAO:
 
         except psycopg.Error as e:
             self.conn.rollback()
-            print(f"Database error in get_data_for_course_cost_calculation: {e}")  # Log the error
+            
             raise  # Re-raise the exception after logging and rollback
         except Exception as e:
             self.conn.rollback()
-            print(f"An unexpected error occurred: {e}")  # Log other errors
+            
             raise  # Re-raise the exception after logging and rollback
 
     def update_student_count(self, course_code: str, study_year: str, student_change: int) -> bool:
@@ -253,12 +253,11 @@ class SchoolDAO:
 
         except psycopg.Error as e:
             self.conn.rollback()
-            print(f"Database error in update_student_count: {e}")
+            
             raise
 
     def allocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, planned_hours: int,
                        employee_id: int, study_year: str):
-        # print("in progress")
 
         try:
             with self.conn.cursor() as cursor:
@@ -308,11 +307,11 @@ class SchoolDAO:
 
         except psycopg.Error as e:
             self.conn.rollback()
-            print(f"Database error in allocate_hours: {e}")
+            
             return False
         except Exception as e:
             self.conn.rollback()
-            print(f"An unexpected error occurred in allocate_hours: {e}")
+            
             return False
 
     def deallocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, employee_id: int,
@@ -357,7 +356,7 @@ class SchoolDAO:
 
                 if cursor.rowcount == 0:
                     self.conn.rollback()
-                    print("No matching allocation found to delete.")
+                    
                     return False
 
             self.conn.commit()
@@ -365,11 +364,11 @@ class SchoolDAO:
 
         except psycopg.Error as e:
             self.conn.rollback()
-            print(f"Database error in deallocate_hours: {e}")
+            
             return False
         except Exception as e:
             self.conn.rollback()
-            print(f"An unexpected error occurred in deallocate_hours: {e}")
+            
             return False
 
     def create_new_teaching_activity(self, other_teaching_activity: str):
@@ -394,11 +393,11 @@ class SchoolDAO:
 
         except psycopg.Error as e:
             self.conn.rollback()
-            print(f"Database error in create_new_teaching_activity: {e}")
+            
             return None
         except Exception as e:
             self.conn.rollback()
-            print(f"An unexpected error occurred: {e}")
+            
             return None
 
     def get_all_teaching_activities(self, teaching_activity_id: int, employee_id: int, study_year: str) -> List[dict]:
@@ -435,5 +434,5 @@ class SchoolDAO:
                     (teaching_activity_id, employee_id, study_year))
                 return cursor.fetchall()
         except psycopg.Error as e:
-            print(f"Database error in get_all_teaching_activities: {e}")
+            
             return []
