@@ -238,6 +238,8 @@ class Cli:
         except Exception as e:
             print(f"An error occurred during deallocation: {e}")
 
+    
+    #reponsbile for the option of creating a new teaching activity in the allocation menu
     def _other(self) -> Optional[int]:
         print("\n --- Choose the name of the Teaching Activity")
         try:
