@@ -368,7 +368,7 @@ class SchoolDAO:
             print(f"An unexpected error occurred: {e}")
             return None
 
-    def get_all_teaching_activities(self,teaching_activity_id: int) -> List[dict]:
+    def get_all_teaching_activities(self,teaching_activity_id: int,employee_id: int ,study_year: str) -> List[dict]:
         """
         Fetches all teaching activities from the database.
         Returns a list of dictionaries representing the rows.
@@ -396,9 +396,11 @@ class SchoolDAO:
                     ON pa.course_instance_id = ci.course_instance_id
                     JOIN course_layout cl
                     ON ci.course_layout_id = cl.course_layout_id
-                    WHERE pa.teaching_activity_id = %s;
+                    WHERE pa.teaching_activity_id = %s
+                    AND aa.employee_id = %s
+                    AND ci.study_year = %s;
                     """,
-                    (teaching_activity_id,))
+                    (teaching_activity_id,employee_id,study_year))
                 return cursor.fetchall()
         except psycopg.Error as e:
             print(f"Database error in get_all_teaching_activities: {e}")

@@ -183,7 +183,7 @@ class Cli:
                 print("Allocation successful!")
                 
                 print("\n--- Updated Allocations for this Activity ---")
-            activities = self.controller.get_all_teaching_activities(teaching_activity_id)
+            activities = self.controller.get_all_teaching_activities(teaching_activity_id,employee_id,study_year)
             
             if activities:
                 # Simple header

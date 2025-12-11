@@ -74,12 +74,12 @@ class Controller:
             print(f"An error occurred in the controller during deallocation: {e}")
             return False
 
-    def get_all_teaching_activities(self, teaching_activity_id: int):
+    def get_all_teaching_activities(self, teaching_activity_id: int, employee_id: int, study_year: str):
         """
         Retrieves all teaching activities.
         """
         try:
-            return self.dao.get_all_teaching_activities(teaching_activity_id)
+            return self.dao.get_all_teaching_activities(teaching_activity_id, employee_id, study_year)
         except Exception as e:
             print(f"An error occurred in the controller while fetching activities: {e}")
             return []
