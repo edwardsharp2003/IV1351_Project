@@ -7,6 +7,7 @@ from src.dao import SchoolDAO
 from src.controller import Controller
 from src.view import Cli
 
+
 def main():
     """
     Main entry point for the application.
@@ -40,6 +41,7 @@ def main():
     finally:
         if 'conn' in locals() and conn:
             conn.close()
+
 
 if __name__ == "__main__":
     main()

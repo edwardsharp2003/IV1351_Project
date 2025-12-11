@@ -1,10 +1,11 @@
 import psycopg
-from psycopg.rows import dict_row # To fetch rows as dictionaries
+from psycopg.rows import dict_row  # To fetch rows as dictionaries
 from typing import List, Tuple, Optional
 from src.model import (
     CourseInstance, PlannedActivity, ActivityAllocation, Employee, SalaryHistory,
     CourseLayout, StudyPeriodType, Person, JobTitle
 )
+
 
 class SchoolDAO:
     """
@@ -21,8 +22,9 @@ class SchoolDAO:
         self.conn = db_connection
 
     def get_data_for_course_cost_calculation(
-        self, course_code: str, study_year: str
-    ) -> Optional[Tuple[CourseLayout, CourseInstance, List[PlannedActivity], List[Tuple[ActivityAllocation, Employee, SalaryHistory, Person, JobTitle, StudyPeriodType]]]]:
+            self, course_code: str, study_year: str
+    ) -> Optional[Tuple[CourseLayout, CourseInstance, List[PlannedActivity], List[
+        Tuple[ActivityAllocation, Employee, SalaryHistory, Person, JobTitle, StudyPeriodType]]]]:
         """
         Fetches all necessary raw data from the database to calculate teaching cost
         for a specific course instance. The data returned is to be processed by the
@@ -44,13 +46,21 @@ class SchoolDAO:
                 # in this context, or we'd need to handle multiple periods.
                 cursor.execute(
                     """
-                    SELECT 
-                        cl.course_layout_id, cl.course_code, cl.course_name, cl.min_students, cl.max_students, cl.hp, cl.valid_from,
-                        ci.course_instance_id, ci.num_students, ci.study_year
+                    SELECT cl.course_layout_id,
+                           cl.course_code,
+                           cl.course_name,
+                           cl.min_students,
+                           cl.max_students,
+                           cl.hp,
+                           cl.valid_from,
+                           ci.course_instance_id,
+                           ci.num_students,
+                           ci.study_year
                     FROM course_layout cl
-                    JOIN course_instance ci ON cl.course_layout_id = ci.course_layout_id
-                    WHERE cl.course_code = %s AND ci.study_year = %s
-                    FOR UPDATE; -- Use SELECT FOR UPDATE as per assignment for transactional integrity
+                             JOIN course_instance ci ON cl.course_layout_id = ci.course_layout_id
+                    WHERE cl.course_code = %s
+                      AND ci.study_year = %s
+                        FOR UPDATE; -- Use SELECT FOR UPDATE as per assignment for transactional integrity
                     """,
                     (course_code, study_year)
                 )
@@ -75,16 +85,20 @@ class SchoolDAO:
                     study_year=course_data['study_year'],
                     course_layout_id=course_data['course_layout_id']
                 )
-                
+
                 course_instance_id = course_instance_dto.id
 
                 # 2. Get planned activities for this course instance
                 cursor.execute(
                     """
-                    SELECT pa.teaching_activity_id, pa.course_instance_id, pa.study_period_id, pa.planned_hours,
-                           ta.activity_name, ta.factor
+                    SELECT pa.teaching_activity_id,
+                           pa.course_instance_id,
+                           pa.study_period_id,
+                           pa.planned_hours,
+                           ta.activity_name,
+                           ta.factor
                     FROM planned_activity pa
-                    JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+                             JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
                     WHERE pa.course_instance_id = %s;
                     """,
                     (course_instance_id,)
@@ -107,28 +121,39 @@ class SchoolDAO:
                 # This is a complex join to get all required details for actual cost calculation.
                 cursor.execute(
                     """
-                    SELECT
-                        aa.activity_allocation_id, aa.employee_id, aa.teaching_activity_id, aa.course_instance_id, aa.study_period_id,
-                        e.person_id, e.job_title_id, e.department_id, e.manager_id, e.salary_history_id,
-                        sh.salary_amount, sh.valid_from AS salary_valid_from,
-                        p.personal_number, p.first_name, p.last_name,
-                        jt.job_title,
-                        st.study_period_id AS period_id_from_study_type -- To ensure we get the period info if needed
+                    SELECT aa.activity_allocation_id,
+                           aa.employee_id,
+                           aa.teaching_activity_id,
+                           aa.course_instance_id,
+                           aa.study_period_id,
+                           e.person_id,
+                           e.job_title_id,
+                           e.department_id,
+                           e.manager_id,
+                           e.salary_history_id,
+                           sh.salary_amount,
+                           sh.valid_from      AS salary_valid_from,
+                           p.personal_number,
+                           p.first_name,
+                           p.last_name,
+                           jt.job_title,
+                           st.study_period_id AS period_id_from_study_type -- To ensure we get the period info if needed
                     FROM activity_allocation aa
-                    JOIN employee e ON aa.employee_id = e.employee_id
-                    JOIN salary_history sh ON e.salary_history_id = sh.salary_history_id
-                    JOIN person p ON e.person_id = p.person_id
-                    JOIN job_title jt ON e.job_title_id = jt.job_title_id
-                    JOIN study_period_type st ON aa.study_period_id = st.study_period_id
+                             JOIN employee e ON aa.employee_id = e.employee_id
+                             JOIN salary_history sh ON e.salary_history_id = sh.salary_history_id
+                             JOIN person p ON e.person_id = p.person_id
+                             JOIN job_title jt ON e.job_title_id = jt.job_title_id
+                             JOIN study_period_type st ON aa.study_period_id = st.study_period_id
                     WHERE aa.course_instance_id = %s;
                     """,
                     (course_instance_id,)
                 )
                 allocations_raw = cursor.fetchall()
-                
+
                 # We return a list of tuples, where each tuple contains the relevant DTOs
                 # for an allocation. The controller will then process this.
-                allocations_dtos: List[Tuple[ActivityAllocation, Employee, SalaryHistory, Person, JobTitle, StudyPeriodType]] = []
+                allocations_dtos: List[
+                    Tuple[ActivityAllocation, Employee, SalaryHistory, Person, JobTitle, StudyPeriodType]] = []
                 for row in allocations_raw:
                     allocation = ActivityAllocation(
                         id=row['activity_allocation_id'],
@@ -162,7 +187,7 @@ class SchoolDAO:
                         job_title=row['job_title']
                     )
                     study_period = StudyPeriodType(
-                        id=row['study_period_id'] # Use the original study_period_id from aa, not the alias
+                        id=row['study_period_id']  # Use the original study_period_id from aa, not the alias
                     )
 
                     allocations_dtos.append((allocation, employee, salary_history, person, job_title, study_period))
@@ -172,12 +197,12 @@ class SchoolDAO:
 
         except psycopg.Error as e:
             self.conn.rollback()
-            print(f"Database error in get_data_for_course_cost_calculation: {e}") # Log the error
-            raise # Re-raise the exception after logging and rollback
+            print(f"Database error in get_data_for_course_cost_calculation: {e}")  # Log the error
+            raise  # Re-raise the exception after logging and rollback
         except Exception as e:
             self.conn.rollback()
-            print(f"An unexpected error occurred: {e}") # Log other errors
-            raise # Re-raise the exception after logging and rollback
+            print(f"An unexpected error occurred: {e}")  # Log other errors
+            raise  # Re-raise the exception after logging and rollback
 
     def update_student_count(self, course_code: str, study_year: str, student_change: int) -> bool:
         """
@@ -191,10 +216,12 @@ class SchoolDAO:
                 # We lock the row for the update.
                 cursor.execute(
                     """
-                    SELECT ci.course_instance_id FROM course_instance ci
-                    JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
-                    WHERE cl.course_code = %s AND ci.study_year = %s
-                    FOR UPDATE;
+                    SELECT ci.course_instance_id
+                    FROM course_instance ci
+                             JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
+                    WHERE cl.course_code = %s
+                      AND ci.study_year = %s
+                        FOR UPDATE;
                     """,
                     (course_code, study_year)
                 )
@@ -202,7 +229,7 @@ class SchoolDAO:
 
                 if not instance:
                     self.conn.rollback()
-                    return False # Course instance not found
+                    return False  # Course instance not found
 
                 course_instance_id = instance[0]
 
@@ -215,7 +242,7 @@ class SchoolDAO:
                     """,
                     (student_change, course_instance_id)
                 )
-                
+
                 # Check if any row was actually updated
                 if cursor.rowcount == 0:
                     self.conn.rollback()
@@ -228,21 +255,23 @@ class SchoolDAO:
             self.conn.rollback()
             print(f"Database error in update_student_count: {e}")
             raise
-        
-    def allocate_hours(self, course_code: str, study_period_id: int,  teaching_activity_id: int,  planned_hours: int, employee_id: int, study_year: str):
-        #print("in progress")
-        
-        
+
+    def allocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, planned_hours: int,
+                       employee_id: int, study_year: str):
+        # print("in progress")
+
         try:
             with self.conn.cursor() as cursor:
                 # First, find the course_instance_id from the course_code and study_year.
                 # We lock the row for the update.
                 cursor.execute(
                     """
-                    SELECT ci.course_instance_id FROM course_instance ci
-                    JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
-                    WHERE cl.course_code = %s AND ci.study_year = %s
-                    FOR UPDATE;
+                    SELECT ci.course_instance_id
+                    FROM course_instance ci
+                             JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
+                    WHERE cl.course_code = %s
+                      AND ci.study_year = %s
+                        FOR UPDATE;
                     """,
                     (course_code, study_year)
                 )
@@ -250,28 +279,29 @@ class SchoolDAO:
 
                 if not instance:
                     self.conn.rollback()
-                    return False # Course instance not found
+                    return False  # Course instance not found
 
                 course_instance_id = instance[0]
                 cursor.execute(
                     """
-                    INSERT INTO planned_activity(teaching_activity_id, course_instance_id, study_period_id, planned_hours)
-                    VALUES (%s, %s, %s, %s)
-                    ON CONFLICT (teaching_activity_id, course_instance_id, study_period_id) 
-                    DO UPDATE SET planned_hours = EXCLUDED.planned_hours;
+                    INSERT INTO planned_activity(teaching_activity_id, course_instance_id, study_period_id,
+                                                 planned_hours)
+                    VALUES (%s, %s, %s, %s) ON CONFLICT (teaching_activity_id, course_instance_id, study_period_id) 
+                    DO
+                    UPDATE SET planned_hours = EXCLUDED.planned_hours;
                     """,
                     (teaching_activity_id, course_instance_id, study_period_id, planned_hours)
                 )
-                
-                
+
                 cursor.execute(
                     """
-                    INSERT INTO activity_allocation(employee_id, teaching_activity_id, course_instance_id, study_period_id)
+                    INSERT INTO activity_allocation(employee_id, teaching_activity_id, course_instance_id,
+                                                    study_period_id)
                     VALUES (%s, %s, %s, %s);
                     """,
                     (employee_id, teaching_activity_id, course_instance_id, study_period_id)
                 )
-            
+
             # 4. Commit the transaction
             self.conn.commit()
             return True
@@ -285,7 +315,8 @@ class SchoolDAO:
             print(f"An unexpected error occurred in allocate_hours: {e}")
             return False
 
-    def deallocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, employee_id: int, study_year: str) -> bool:
+    def deallocate_hours(self, course_code: str, study_period_id: int, teaching_activity_id: int, employee_id: int,
+                         study_year: str) -> bool:
         """
         Removes a specific teaching allocation for an employee.
         """
@@ -294,10 +325,12 @@ class SchoolDAO:
                 # 1. Find the course_instance_id
                 cursor.execute(
                     """
-                    SELECT ci.course_instance_id FROM course_instance ci
-                    JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
-                    WHERE cl.course_code = %s AND ci.study_year = %s
-                    FOR UPDATE;
+                    SELECT ci.course_instance_id
+                    FROM course_instance ci
+                             JOIN course_layout cl ON ci.course_layout_id = cl.course_layout_id
+                    WHERE cl.course_code = %s
+                      AND ci.study_year = %s
+                        FOR UPDATE;
                     """,
                     (course_code, study_year)
                 )
@@ -305,22 +338,23 @@ class SchoolDAO:
 
                 if not instance:
                     self.conn.rollback()
-                    return False # Course instance not found
+                    return False  # Course instance not found
 
                 course_instance_id = instance[0]
 
                 # 2. Delete the allocation
                 cursor.execute(
                     """
-                    DELETE FROM activity_allocation
-                    WHERE employee_id = %s 
-                      AND teaching_activity_id = %s 
-                      AND course_instance_id = %s 
+                    DELETE
+                    FROM activity_allocation
+                    WHERE employee_id = %s
+                      AND teaching_activity_id = %s
+                      AND course_instance_id = %s
                       AND study_period_id = %s;
                     """,
                     (employee_id, teaching_activity_id, course_instance_id, study_period_id)
                 )
-                
+
                 if cursor.rowcount == 0:
                     self.conn.rollback()
                     print("No matching allocation found to delete.")
@@ -337,7 +371,7 @@ class SchoolDAO:
             self.conn.rollback()
             print(f"An unexpected error occurred in deallocate_hours: {e}")
             return False
-        
+
     def create_new_teaching_activity(self, other_teaching_activity: str):
         """
         Creates an new teaching activity in the database with the string value given in the CLI.
@@ -348,14 +382,13 @@ class SchoolDAO:
                 # Insert the new activity with a default factor of 1.0
                 cursor.execute(
                     """
-                    INSERT INTO teaching_activity (activity_name, factor) 
-                    VALUES (%s, 1.0) 
-                    RETURNING teaching_activity_id;
+                    INSERT INTO teaching_activity (activity_name, factor)
+                    VALUES (%s, 1.0) RETURNING teaching_activity_id;
                     """,
                     (other_teaching_activity,)
                 )
                 new_id = cursor.fetchone()[0]
-            
+
             self.conn.commit()
             return new_id
 
@@ -368,7 +401,7 @@ class SchoolDAO:
             print(f"An unexpected error occurred: {e}")
             return None
 
-    def get_all_teaching_activities(self,teaching_activity_id: int,employee_id: int ,study_year: str) -> List[dict]:
+    def get_all_teaching_activities(self, teaching_activity_id: int, employee_id: int, study_year: str) -> List[dict]:
         """
         Fetches all teaching activities from the database.
         Returns a list of dictionaries representing the rows.
@@ -376,33 +409,31 @@ class SchoolDAO:
         try:
             with self.conn.cursor(row_factory=dict_row) as cursor:
                 cursor.execute(
-                    """SELECT 
-                        ta.activity_name, 
-                        pa.teaching_activity_id,
-                        pa.planned_hours,
-                        aa.employee_id,
-                        pa.course_instance_id,
-                        pa.study_period_id,
-                        cl.course_code,
-                        ci.study_year
-                    FROM planned_activity pa
-                    JOIN activity_allocation aa 
-                    ON pa.teaching_activity_id = aa.teaching_activity_id 
-                    AND pa.course_instance_id = aa.course_instance_id
-                    AND pa.study_period_id = aa.study_period_id
-                    JOIN teaching_activity ta  
-                    ON pa.teaching_activity_id = ta.teaching_activity_id
-                    JOIN course_instance ci 
-                    ON pa.course_instance_id = ci.course_instance_id
-                    JOIN course_layout cl
-                    ON ci.course_layout_id = cl.course_layout_id
-                    WHERE pa.teaching_activity_id = %s
-                    AND aa.employee_id = %s
-                    AND ci.study_year = %s;
+                    """SELECT ta.activity_name,
+                              pa.teaching_activity_id,
+                              pa.planned_hours,
+                              aa.employee_id,
+                              pa.course_instance_id,
+                              pa.study_period_id,
+                              cl.course_code,
+                              ci.study_year
+                       FROM planned_activity pa
+                                JOIN activity_allocation aa
+                                     ON pa.teaching_activity_id = aa.teaching_activity_id
+                                         AND pa.course_instance_id = aa.course_instance_id
+                                         AND pa.study_period_id = aa.study_period_id
+                                JOIN teaching_activity ta
+                                     ON pa.teaching_activity_id = ta.teaching_activity_id
+                                JOIN course_instance ci
+                                     ON pa.course_instance_id = ci.course_instance_id
+                                JOIN course_layout cl
+                                     ON ci.course_layout_id = cl.course_layout_id
+                       WHERE pa.teaching_activity_id = %s
+                         AND aa.employee_id = %s
+                         AND ci.study_year = %s;
                     """,
-                    (teaching_activity_id,employee_id,study_year))
+                    (teaching_activity_id, employee_id, study_year))
                 return cursor.fetchall()
         except psycopg.Error as e:
             print(f"Database error in get_all_teaching_activities: {e}")
             return []
-

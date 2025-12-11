@@ -3,9 +3,11 @@ from datetime import date
 from decimal import Decimal
 from typing import Optional
 
+
 @dataclass
 class StudyPeriodType:
     id: int
+
 
 @dataclass
 class CourseLayout:
@@ -17,12 +19,14 @@ class CourseLayout:
     hp: Decimal
     valid_from: date
 
+
 @dataclass
 class CourseInstance:
     id: int
     num_students: int
     study_year: str
     course_layout_id: int
+
 
 @dataclass
 class Person:
@@ -31,10 +35,12 @@ class Person:
     first_name: str
     last_name: str
 
+
 @dataclass
 class JobTitle:
     id: int
     job_title: str
+
 
 @dataclass
 class Department:
@@ -42,12 +48,14 @@ class Department:
     department_name: str
     manager_id: Optional[int]
 
+
 @dataclass
 class SalaryHistory:
     id: int
     salary_amount: Decimal
     valid_from: date
     employee_id: int
+
 
 @dataclass
 class Employee:
@@ -58,16 +66,19 @@ class Employee:
     manager_id: int
     salary_history_id: int
 
+
 @dataclass
 class Skill:
     id: int
     skill_name: str
+
 
 @dataclass
 class TeachingActivity:
     id: int
     activity_name: str
     factor: Decimal
+
 
 @dataclass
 class PlannedActivity:
@@ -78,6 +89,7 @@ class PlannedActivity:
     activity_name: str
     factor: Decimal
 
+
 @dataclass
 class ActivityAllocation:
     id: int
@@ -85,6 +97,7 @@ class ActivityAllocation:
     teaching_activity_id: int
     course_instance_id: int
     study_period_id: int
+
 
 # --- Composite DTO for specific functionality ---
 
