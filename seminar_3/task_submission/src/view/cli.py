@@ -112,7 +112,7 @@ class Cli:
         """
         Handles the user interaction for computing teaching cost.
         """
-        print("\n--- Choose between allocating of deallocating Teachers to a course_instance")
+        print("\n--- Choose between allocating or deallocating Teachers to a course_instance")
         print("\n 1. For allocating")
         print("\n 2. For deallocating")
         print("Type 'exit' to go to main menu.")
@@ -216,7 +216,7 @@ class Cli:
         try:
             study_period_id = int(input("Enter Study Period ID (1-4): ").strip())
             employee_id = int(input("Enter Employee ID: ").strip())
-            teaching_activity_id = int(input("Enter Teaching Activity type ").strip())
+            teaching_activity_id = int(input("Enter Teaching Activity type: ").strip())
 
             print(f"\nAttempting to deallocate Employee {employee_id} from activity {teaching_activity_id}...")
 
@@ -241,7 +241,7 @@ class Cli:
     def _other(self) -> Optional[int]:
         print("\n --- Choose the name of the Teaching Activity")
         try:
-            other_teaching_activity = input("Enter the name of the new activity(e.g, Exercise):").strip()
+            other_teaching_activity = input("Enter the name of the new activity(e.g, Exercise): ").strip()
 
             # Note: create_new_teaching_activity returns an ID (int) or None
             new_id = self.controller.create_new_teaching_activity(other_teaching_activity)
