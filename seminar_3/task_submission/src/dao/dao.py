@@ -368,17 +368,39 @@ class SchoolDAO:
             print(f"An unexpected error occurred: {e}")
             return None
 
-    def get_all_teaching_activities(self) -> List[dict]:
+    def get_all_teaching_activities(self,teaching_activity_id: int) -> List[dict]:
         """
         Fetches all teaching activities from the database.
         Returns a list of dictionaries representing the rows.
         """
         try:
             with self.conn.cursor(row_factory=dict_row) as cursor:
-                cursor.execute("SELECT * FROM teaching_activity ORDER BY teaching_activity_id;")
+                cursor.execute(
+                    """SELECT 
+                        ta.activity_name, 
+                        pa.teaching_activity_id,
+                        pa.planned_hours,
+                        aa.employee_id,
+                        pa.course_instance_id,
+                        pa.study_period_id,
+                        cl.course_code,
+                        ci.study_year
+                    FROM planned_activity pa
+                    JOIN activity_allocation aa 
+                    ON pa.teaching_activity_id = aa.teaching_activity_id 
+                    AND pa.course_instance_id = aa.course_instance_id
+                    AND pa.study_period_id = aa.study_period_id
+                    JOIN teaching_activity ta  
+                    ON pa.teaching_activity_id = ta.teaching_activity_id
+                    JOIN course_instance ci 
+                    ON pa.course_instance_id = ci.course_instance_id
+                    JOIN course_layout cl
+                    ON ci.course_layout_id = cl.course_layout_id
+                    WHERE pa.teaching_activity_id = %s;
+                    """,
+                    (teaching_activity_id,))
                 return cursor.fetchall()
         except psycopg.Error as e:
             print(f"Database error in get_all_teaching_activities: {e}")
             return []
-    
-            
+

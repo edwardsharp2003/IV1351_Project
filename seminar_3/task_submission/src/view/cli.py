@@ -181,6 +181,17 @@ class Cli:
             
             if success:
                 print("Allocation successful!")
+                
+                print("\n--- Updated Allocations for this Activity ---")
+            activities = self.controller.get_all_teaching_activities(teaching_activity_id)
+            
+            if activities:
+                # Simple header
+                print(f"{'Activity':<15} {'Course':<10} {'Year':<6} {'Hours':<6} {'Emp ID':<8}")
+                print("-" * 50)
+                for row in activities:
+                    print(f"{row['activity_name']:<15} {row['course_code']:<10} {row['study_year']:<6} {row['planned_hours']:<6} {row['employee_id']:<8}")
+                print("-" * 50)
             else:
                 print("Allocation failed. Please check inputs or database logs.")
                 
@@ -227,7 +238,7 @@ class Cli:
     def _other(self) -> Optional[int]:
         print("\n --- Choose the name of the Teaching Activity")
         try:
-            other_teaching_activity = input("Enter the name of the new activity(e.g, Exercise)").strip()
+            other_teaching_activity = input("Enter the name of the new activity(e.g, Exercise):").strip()
             
             # Note: create_new_teaching_activity returns an ID (int) or None
             new_id = self.controller.create_new_teaching_activity(other_teaching_activity)
