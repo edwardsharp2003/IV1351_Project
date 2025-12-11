@@ -14,3 +14,6 @@ from .dtos import (
     ActivityAllocation,
     CourseTeachingCost,
 )
+
+# Expose business logic services
+from .utilities import CostCalculator
