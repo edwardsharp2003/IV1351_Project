@@ -1,5 +1,5 @@
 # IV1351 Project
-Instructions for project task 3 further down
+Instructions for project task 3 [further down](#task-3)
 
 ## Scripts
 
@@ -90,7 +90,7 @@ You will need python in order to run the app, since everything is done in python
 Follow [Python Configuration](#python-configuration) in case you dont have any python version installed.
 
 ### 3.1 Create Database
-Create DB from files in [db_scripts](seminar_3/task_submission/db_scripts)
+**Create DB from files in [db_scripts](seminar_3/task_submission/db_scripts)**
 ```
 CREATE DATABASE iv1351t3;
 \c iv1351t3;
@@ -99,18 +99,26 @@ CREATE DATABASE iv1351t3;
 ```
 
 ### 3.2 Dotfiles and Venv setup
-Make a copy of [env.example.](seminar_3/task_submission/env.example), name it ".env" (dotenv) and fill with your specific information. Most noteworthy, this means changing <br>
-"DB_USER=postgres" to whatever username you use for your database, and <br>
+**Make a copy of [env.example.](seminar_3/task_submission/env.example), name it ".env" (dotenv) and fill with your specific information.** <br>
+Most noteworthy, this means changing "DB_USER=postgres" to whatever username you use for your database, and <br>
 "DB_PASSWORD=your_postgres_password_here" to contain your database password
 
-Activate venv, go to project root for task 3
+**Activate venv, go to project root for task 3**
 ```
 cd IV1351_Project/seminar_3/task_submission
 ```
-Download requirements
+**Download requirements**<br>
+<sub>(Need to be in same directory as requirements.txt for this, otherwise add path)</sub>
 ```
-pip install -r requirements.txt # need to be in same directory as requirements.txt for this, otherwise add path
+pip install -r requirements.txt
 ```
 
 ### 3.3 Run it
-
+if you're in source root [task_submission](seminar_3/task_submission/):
+```
+python3 main.py
+```
+if you're in project root [IV1351_Project]():
+```
+python3 seminar_3/task_submission/main.py
+```
