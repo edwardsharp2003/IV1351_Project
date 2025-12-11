@@ -16,4 +16,4 @@ from .dtos import (
 )
 
 # Expose business logic services
-from .utilities import CostCalculator
+from .logic import CostCalculator

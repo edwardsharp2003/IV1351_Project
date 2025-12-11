@@ -1,6 +1,6 @@
 from src.dao import SchoolDAO
 from src.model import CourseTeachingCost
-from src.model.utilities import CostCalculator
+from src.model.logic import CostCalculator
 
 
 class Controller:
