@@ -72,7 +72,7 @@ class CostCalculator:
         Calculates the total explicit planned hours (including multiplication factors).
         """
         return sum(
-            Decimal(str(pa.planned_hours)) * pa.factor 
+            Decimal(str(pa.planned_hours)) * Decimal(str(pa.factor))
             for pa in planned_activities
         )
 
