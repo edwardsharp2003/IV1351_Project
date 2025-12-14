@@ -54,10 +54,8 @@ class CostCalculator:
             exam_hours
         )
         
-        # 5. Determine the period
         period = CostCalculator._determine_period(allocations, planned_activities)
         
-        # 6. Create and return the result DTO
         return CourseTeachingCost(
             course_code=course_layout.course_code,
             course_instance_id=course_instance.id,
@@ -106,14 +104,11 @@ class CostCalculator:
         teacher_workload = {}  # {teacher_id: {'base_hours': Decimal, 'hourly_rate': Decimal}}
         total_base_hours = Decimal('0.00')
         
-        # First pass: Aggregate each teacher's base hours and hourly rate
         for alloc_tuple in allocations:
             allocation, employee, salary_history, person, job_title, study_period = alloc_tuple
             
-            # Find the planned hours for this specific allocation
             for pa in planned_activities:
                 if pa.teaching_activity_id == allocation.teaching_activity_id:
-                    # Initialize teacher if not already in workload
                     if employee.id not in teacher_workload:
                         hourly_rate = (
                             salary_history.salary_amount / CostCalculator.HOURS_PER_MONTH 
@@ -125,21 +120,18 @@ class CostCalculator:
                             'hourly_rate': hourly_rate
                         }
                     
-                    # Add hours (including factor) to this teacher's workload
                     hours_for_activity = Decimal(str(pa.planned_hours)) * pa.factor
                     teacher_workload[employee.id]['base_hours'] += hours_for_activity
                     total_base_hours += hours_for_activity
                     break
         
-        # Second pass: Calculate each teacher's share of derived hours and total cost
         total_derived_hours = admin_hours + exam_hours
         total_actual_cost = Decimal('0.00')
         
         for teacher_id, work in teacher_workload.items():
-            # Cost of their base work
+            
             base_work_cost = work['base_hours'] * work['hourly_rate']
             
-            # Their share of the derived work
             proportion_of_work = (
                 (work['base_hours'] / total_base_hours) 
                 if total_base_hours > 0 
@@ -148,7 +140,6 @@ class CostCalculator:
             derived_hours_for_teacher = total_derived_hours * proportion_of_work
             derived_work_cost = derived_hours_for_teacher * work['hourly_rate']
             
-            # Total cost for this teacher is their base work + their share of derived work
             total_actual_cost += base_work_cost + derived_work_cost
         
         return total_actual_cost

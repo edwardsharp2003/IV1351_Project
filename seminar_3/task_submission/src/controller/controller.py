@@ -4,13 +4,10 @@ from src.model.logic import CostCalculator
 
 
 class Controller:
-    # Handles application logic, orchestrating calls between the view and the DAO.
     def __init__(self, dao: SchoolDAO):
-        # Initializes the Controller with a dao, an instance of SchoolDAO
         self.dao = dao
 
     def get_course_teaching_cost(self, course_code: str, study_year: str) -> CourseTeachingCost | None:
-        # Calculates the planned and actual teaching cost for a given course instance.
 
         # 1. Get all the raw data from the DAO
         dao_data = self.dao.get_data_for_course_cost_calculation(course_code, study_year)
@@ -20,7 +17,6 @@ class Controller:
 
         course_layout, course_instance, planned_activities, allocations = dao_data
 
-        # 2. Delegate business logic to the model layer
         return CostCalculator.calculate_teaching_cost(
             course_layout,
             course_instance,
@@ -40,7 +36,7 @@ class Controller:
         try:
             return self.dao.update_student_count(course_code, study_year, student_change)
         except Exception as e:
-            # In a real application, you might have more specific error handling here
+            #missing an error handler
             
             return False
 

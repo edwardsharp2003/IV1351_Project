@@ -37,13 +37,8 @@ class SchoolDAO:
                  Returns None if the course instance is not found.
         """
 
-        # The connection's autocommit mode is now managed in main.py.
         try:
             with self.conn.cursor(row_factory=dict_row) as cursor:
-                # 1. Find the specific course_layout and course_instance
-                # This query also gets the period associated with the course_instance
-                # We assume one course instance is associated with one period for simplicity
-                # in this context, or we'd need to handle multiple periods.
                 cursor.execute(
                     """
                     SELECT cl.course_layout_id,
@@ -88,7 +83,6 @@ class SchoolDAO:
 
                 course_instance_id = course_instance_dto.id
 
-                # 2. Get planned activities for this course instance
                 cursor.execute(
                     """
                     SELECT pa.teaching_activity_id,
@@ -117,8 +111,6 @@ class SchoolDAO:
                         )
                     )
 
-                # 3. Get actual allocations and employee details (including salary and person info)
-                # This is a complex join to get all required details for actual cost calculation.
                 cursor.execute(
                     """
                     SELECT aa.activity_allocation_id,
@@ -150,8 +142,6 @@ class SchoolDAO:
                 )
                 allocations_raw = cursor.fetchall()
 
-                # We return a list of tuples, where each tuple contains the relevant DTOs
-                # for an allocation. The controller will then process this.
                 allocations_dtos: List[
                     Tuple[ActivityAllocation, Employee, SalaryHistory, Person, JobTitle, StudyPeriodType]] = []
                 for row in allocations_raw:
@@ -187,7 +177,7 @@ class SchoolDAO:
                         job_title=row['job_title']
                     )
                     study_period = StudyPeriodType(
-                        id=row['study_period_id']  # Use the original study_period_id from aa, not the alias
+                        id=row['study_period_id']  
                     )
 
                     allocations_dtos.append((allocation, employee, salary_history, person, job_title, study_period))
@@ -198,11 +188,11 @@ class SchoolDAO:
         except psycopg.Error as e:
             self.conn.rollback()
             
-            raise  # Re-raise the exception after logging and rollback
+            raise  # Re-raise the exception 
         except Exception as e:
             self.conn.rollback()
             
-            raise  # Re-raise the exception after logging and rollback
+            raise  # Re-raise the exception 
 
     def update_student_count(self, course_code: str, study_year: str, student_change: int) -> bool:
         """
@@ -212,8 +202,6 @@ class SchoolDAO:
         """
         try:
             with self.conn.cursor() as cursor:
-                # First, find the course_instance_id from the course_code and study_year.
-                # We lock the row for the update.
                 cursor.execute(
                     """
                     SELECT ci.course_instance_id
@@ -223,17 +211,16 @@ class SchoolDAO:
                       AND ci.study_year = %s
                         FOR UPDATE;
                     """,
-                    (course_code, study_year)
+                    (course_code, study_year),
                 )
                 instance = cursor.fetchone()
 
                 if not instance:
                     self.conn.rollback()
-                    return False  # Course instance not found
+                    return False  
 
                 course_instance_id = instance[0]
 
-                # Now, perform the update
                 cursor.execute(
                     """
                     UPDATE course_instance
@@ -243,7 +230,6 @@ class SchoolDAO:
                     (student_change, course_instance_id)
                 )
 
-                # Check if any row was actually updated
                 if cursor.rowcount == 0:
                     self.conn.rollback()
                     return False
@@ -261,8 +247,6 @@ class SchoolDAO:
 
         try:
             with self.conn.cursor() as cursor:
-                # First, find the course_instance_id from the course_code and study_year.
-                # We lock the row for the update.
                 cursor.execute(
                     """
                     SELECT ci.course_instance_id
@@ -278,7 +262,7 @@ class SchoolDAO:
 
                 if not instance:
                     self.conn.rollback()
-                    return False  # Course instance not found
+                    return False  
 
                 course_instance_id = instance[0]
                 cursor.execute(
@@ -301,7 +285,7 @@ class SchoolDAO:
                     (employee_id, teaching_activity_id, course_instance_id, study_period_id)
                 )
 
-            # 4. Commit the transaction
+            
             self.conn.commit()
             return True
 
@@ -337,7 +321,7 @@ class SchoolDAO:
 
                 if not instance:
                     self.conn.rollback()
-                    return False  # Course instance not found
+                    return False  
 
                 course_instance_id = instance[0]
 
@@ -378,11 +362,10 @@ class SchoolDAO:
         """
         try:
             with self.conn.cursor() as cursor:
-                # Insert the new activity with a default factor of 1.0
                 cursor.execute(
                     """
                     INSERT INTO teaching_activity (activity_name, factor)
-                    VALUES (%s, 1.0) RETURNING teaching_activity_id;
+                    VALUES (%s, 1) RETURNING teaching_activity_id;
                     """,
                     (other_teaching_activity,)
                 )

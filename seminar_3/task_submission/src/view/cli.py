@@ -120,7 +120,7 @@ class Cli:
 
         while True:
             # Note: Calling _display_menu() here might be confusing as it shows the main menu options
-            # but we are in a sub-menu. I'll just prompt for choice.
+            # but we are in a sub-menu.
             choice = input("Enter your choice (1, 2, or exit): ").strip()
 
             if choice == '1':
@@ -240,12 +240,11 @@ class Cli:
 
     
     #reponsbile for the option of creating a new teaching activity in the allocation menu
-    def _other(self) -> Optional[int]:
+    def _other(self):
         print("\n --- Choose the name of the Teaching Activity")
         try:
             other_teaching_activity = input("Enter the name of the new activity(e.g, Exercise): ").strip()
 
-            # Note: create_new_teaching_activity returns an ID (int) or None
             new_id = self.controller.create_new_teaching_activity(other_teaching_activity)
 
             if new_id:
